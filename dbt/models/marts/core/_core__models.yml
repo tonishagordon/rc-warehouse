@@ -21,3 +21,61 @@ models:
     columns:
       - name: person_id
         data_tests: [unique, not_null]
+
+  - name: dim_show
+    description: One row per show in the warehouse, with data source and scope.
+    columns:
+      - name: show_name
+        data_tests: [unique, not_null]
+
+  - name: dim_season
+    description: >
+      One row per season of every show. Survivor dates come from survivoR;
+      Big Brother and Challenge dates from each season page's Episodes table.
+    columns:
+      - name: season_key
+        data_tests: [unique, not_null]
+      - name: show_name
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_show')
+                field: show_name
+      - name: premiered_date
+        description: Missing = the season page had no parsable Episodes dates (warn).
+        data_tests:
+          - not_null:
+              config:
+                severity: warn
+
+  - name: fct_appearance
+    description: >
+      One row per person per season across all shows, with a shared outcome
+      vocabulary (result_category, exit_method), a finish place computed the
+      same way for every show, a size-adjusted finish_percentile, and career
+      order fields (career_appearance_number, debut_show, is_cross_show_debut).
+    columns:
+      - name: appearance_key
+        data_tests: [unique, not_null]
+      - name: person_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_person')
+                field: person_id
+      - name: season_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_season')
+                field: season_key
+      - name: result_category
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['winner', 'runner_up', 'finalist', 'eliminated', 'quit', 'removed', 'medical', 'in_progress', 'unknown']
+      - name: exit_method
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['jury_vote', 'final_challenge', 'vote_out', 'eviction', 'banished', 'elimination_round', 'quit', 'removed', 'medical']

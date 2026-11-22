@@ -93,3 +93,16 @@ A running record of modeling choices and why they were made.
 - *Seed schema change:* adding the `decision` column changes the seed's table shape, so the seed had to be reloaded with `dbt seed --full-refresh`. Without it, the seed load fails and the downstream marts keep stale data.
 - *Rejections apply to people, not season pairs:* after the first pass, Nick Brown, Adria/Adam Klein and Nia/Nate Moore came back through their *other* seasons (e.g. Adam Klein's Winners at War season). `different` rows are now resolved to person IDs, so one review silences the pair for good.
 - *Result:* 1,574 people from 2,762 appearances; 56 cross-show people; 0 over-merges; 80 dbt checks passing.
+
+## D012 — fct_appearance: one outcome vocabulary for every show
+**Date:** 2026-11-22
+**Decision:** Each show's ending is mapped onto two shared fields:
+- `result_category`: winner / runner_up / finalist / eliminated / quit / removed / medical / in_progress / unknown
+- `exit_method`: jury_vote (Survivor, BB finals) / final_challenge (Challenge finals) / vote_out / eviction / banished / elimination_round / quit / removed / medical
+
+**Finish place, one rule for every show:** finalists by tier (winner, runner-up, other finalists), then everyone else by how long they lasted (BB exit day; Challenge exit episode; Survivor uses survivoR's own place). Ties share a place (`rank`).
+**`finish_percentile`** = 1 − (place − 1) / (cast size − 1): 1.0 = won, 0.0 = first out. It makes a 16-person BB season and a 40-person Challenge season comparable.
+**Big Brother returns:** when a houseguest has two result rows (e.g. Jag in BB25: eviction nullified, then won), the final outcome is the best result, then the latest exit.
+**Career order:** BB and Challenge premiere dates are parsed from each season page's Episodes table (survivoR already has dates), so appearances can be ordered across shows: `career_appearance_number`, `debut_show`, `is_cross_show_debut`.
+**Known limitation:** Challenge seasons that crown pairs or teams have several winners, and players eliminated in the same episode tie. Fine for percentiles; flagged by a warn-level test.
+- *Date fix:* the first build showed Big Brother seasons from **1988** to 2025, which is impossible (BB1 aired in 2000 and BB28 in 2026). Taking the min/max of every date in the Episodes table picked up stray dates. Premiere and finale now come from the first and last episode rows, dates before 1998 are ignored, and a warn-level test checks that season premieres run in order.
