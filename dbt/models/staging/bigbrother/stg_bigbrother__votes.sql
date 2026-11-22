@@ -84,6 +84,8 @@ classified as (
               or value ilike 'non-houseguest%'
               or value ilike 'coach%'
               or value ilike 'backstage%'                       then 'no_vote'
+            when value ilike 'coup d%'                          then 'power_used'  -- BB11 Coup d'État
+            when value ilike '%offer%'                          then 'no_vote'     -- BB14 coaches' offer to join the game
             when value ilike 'winner%'                          then 'winner'
             when value ilike 'runner%'                          then 'runner_up'
             else 'other'
