@@ -55,3 +55,14 @@ A running record of modeling choices and why they were made.
 - Paired formats list two people per row with one Original season: Fresh Meat I/II pair an "Alumni" veteran with a "Fresh Meat" rookie, and Battle of the Bloodlines pairs an "Alumni" veteran with a "Bloodline" relative. The second person's origin is set from their column (rookie / relative new to TV), not copied from the veteran's.
 - `origin_is_us_version` separates "Big Brother 20" from "Big Brother UK 17" or "Survivor Turkey 8": only US versions can link to this warehouse's Survivor and Big Brother data.
 - The same person appears under different names across seasons (e.g. Faysal Shafaat vs. Faysal "Fessy" Shafaat). Resolving that is the entity-resolution step, not staging.
+
+## D008 — Entity resolution, step 1: Challenge → origin season (blocked matching)
+**Date:** 2026-11-21
+**Decision:** Link each Challenge contestant whose Original season is a US Survivor or Big Brother season to a person in *that specific season*, all in dbt SQL:
+- **Normalize names** (`normalize_name` macro): lowercase, strip accents, drop quoted nicknames and suffixes (Jr, III), remove punctuation. The nickname is kept separately.
+- **Block** on the origin season ("Big Brother 20" → BB20; "Survivor: Cagayan" → its survivoR season key), so each contestant is compared with ~16–20 people instead of ~1,500.
+- **Score** = best of exact name, first + last name, nickname + last name, and Jaro-Winkler similarity.
+- **Decide:** `auto` if score ≥ 0.93 and ≥ 0.05 ahead of the runner-up; `review` if ≥ 0.80; otherwise `no_match`. Review cases go to a hand-maintained crosswalk (next step).
+**Why:** Blocking on the origin season turns a fuzzy, error-prone global search into an easy pick within a small group. The margin rule stops a match from being accepted when two candidates look similar.
+- *First results:* every match was automatic except 6 rows covering 3 people: Jay Starrett (survivoR: Justin Starrett), Shan Smith (Shantel Smith) and Tasha Fox (Latasha Fox). All three are correct matches; the players go by a shortened name. survivoR's `castaway` column holds that "goes by" name, so it's now used as the Survivor nickname, which lets the nickname + last-name rule match them automatically. A data-driven fix was preferred over hard-coding 3 overrides.
+- *Build note:* the column was first named `show`, which is a reserved word in DuckDB (`SHOW TABLES`) and broke the first build. Renamed to `show_name`.

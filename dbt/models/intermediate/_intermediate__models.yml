@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: int_person_mentions
+    description: >
+      Every person-season appearance across Survivor, Big Brother and The
+      Challenge with normalized names, nicknames and (for Challenge) a pointer
+      to the origin season when it's in the warehouse. Input to entity resolution.
+    columns:
+      - name: mention_key
+        data_tests: [unique, not_null]
+      - name: name_norm
+        data_tests: [not_null]
+
+  - name: int_challenge_origin_matches
+    description: >
+      Links each Challenge contestant whose Original season is a US Survivor
+      or Big Brother season to the matching person in that season. Blocked by
+      origin season, scored on name/nickname similarity. match_decision:
+      auto / review / no_match / no_candidates.
+    columns:
+      - name: challenge_mention_key
+        data_tests: [unique, not_null]
+      - name: match_decision
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['auto', 'review', 'no_match', 'no_candidates']
