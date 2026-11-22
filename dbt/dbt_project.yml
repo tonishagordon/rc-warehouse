@@ -21,3 +21,17 @@ models:
     marts:
       +materialized: table
       +schema: marts
+
+seeds:
+  rc_warehouse:
+    +schema: seeds
+    crosswalk_manual:
+      +column_types:
+        show_a: varchar
+        season_a: varchar
+        name_a: varchar
+        show_b: varchar
+        season_b: varchar
+        name_b: varchar
+        decision: varchar
+        note: varchar

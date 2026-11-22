@@ -1,5 +1,7 @@
--- Cross-show entity resolution, step 1: link Challenge contestants to the
--- exact Survivor / Big Brother season they came from.
+-- Cross-show entity resolution, step 1: link people to the exact earlier
+-- season they came from: Challenge contestants -> their Survivor / Big Brother
+-- origin season, and Big Brother houseguests -> a Survivor season listed on
+-- their name (D008, extended in D010).
 --
 -- Blocking: the contestant's Original season ("Big Brother 20") narrows the
 -- candidates to ~16-20 people, so matching only has to pick the right one
@@ -8,9 +10,9 @@
 -- similarity of normalized names.
 -- Decision: auto-match when the best score is high AND clearly ahead of the
 -- runner-up; send near-misses to review; the rest are no-match.
-with challenge as (
+with sources as (
     select * from {{ ref('int_person_mentions') }}
-    where show_name = 'challenge' and origin_season_key is not null
+    where origin_season_key is not null
 ),
 
 candidates as (
@@ -20,9 +22,9 @@ candidates as (
 
 scored as (
     select
-        c.mention_key                       as challenge_mention_key,
-        c.display_name                      as challenge_name,
-        c.season_key                        as challenge_season_key,
+        c.mention_key                       as source_mention_key,
+        c.display_name                      as source_name,
+        c.season_key                        as source_season_key,
         c.origin_season_key,
         m.mention_key                       as candidate_mention_key,
         m.display_name                      as candidate_name,
@@ -36,7 +38,7 @@ scored as (
                     or m.nickname_norm  in (c.first_name_norm, c.nickname_norm)) then 0.97 end,
             jaro_winkler_similarity(c.name_norm, m.name_norm)
         )                                   as score
-    from challenge as c
+    from sources as c
     inner join candidates as m
         on m.season_key = c.origin_season_key
 ),
@@ -44,8 +46,8 @@ scored as (
 ranked as (
     select
         *,
-        row_number() over (partition by challenge_mention_key order by score desc) as rnk,
-        lead(score) over (partition by challenge_mention_key order by score desc)   as runner_up_score
+        row_number() over (partition by source_mention_key order by score desc) as rnk,
+        lead(score) over (partition by source_mention_key order by score desc)   as runner_up_score
     from scored
 ),
 
@@ -54,9 +56,10 @@ best as (
 )
 
 select
-    c.mention_key                                   as challenge_mention_key,
-    c.display_name                                  as challenge_name,
-    c.season_key                                    as challenge_season_key,
+    c.mention_key                                   as source_mention_key,
+    c.show_name                                     as source_show,
+    c.display_name                                  as source_name,
+    c.season_key                                    as source_season_key,
     c.origin_season_key,
     b.candidate_mention_key,
     b.candidate_name,
@@ -70,6 +73,6 @@ select
         when b.score >= 0.80                            then 'review'
         else 'no_match'
     end                                             as match_decision
-from challenge as c
+from sources as c
 left join best as b
-    on c.mention_key = b.challenge_mention_key
+    on c.mention_key = b.source_mention_key

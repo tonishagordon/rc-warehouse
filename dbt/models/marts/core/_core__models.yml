@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: bridge_person_mention
+    description: Every source appearance (mention) with its resolved person_id.
+    columns:
+      - name: mention_key
+        data_tests: [unique, not_null]
+      - name: person_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_person')
+                field: person_id
+
+  - name: dim_person
+    description: >
+      One row per real person across Survivor, Big Brother and The Challenge,
+      built from connected components of identity, cross-show and manual edges.
+    columns:
+      - name: person_id
+        data_tests: [unique, not_null]

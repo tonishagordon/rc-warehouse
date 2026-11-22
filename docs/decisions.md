@@ -66,3 +66,30 @@ A running record of modeling choices and why they were made.
 **Why:** Blocking on the origin season turns a fuzzy, error-prone global search into an easy pick within a small group. The margin rule stops a match from being accepted when two candidates look similar.
 - *First results:* every match was automatic except 6 rows covering 3 people: Jay Starrett (survivoR: Justin Starrett), Shan Smith (Shantel Smith) and Tasha Fox (Latasha Fox). All three are correct matches; the players go by a shortened name. survivoR's `castaway` column holds that "goes by" name, so it's now used as the Survivor nickname, which lets the nickname + last-name rule match them automatically. A data-driven fix was preferred over hard-coding 3 overrides.
 - *Build note:* the column was first named `show`, which is a reserved word in DuckDB (`SHOW TABLES`) and broke the first build. Renamed to `show_name`.
+
+## D009 — dim_person: entity resolution as a graph
+**Date:** 2026-11-21
+**Decision:** Every piece of evidence that two records are the same person becomes an edge. People are the **connected components** of that graph, computed in dbt with a recursive CTE.
+- **Same-show identity:** survivoR's `castaway_id`; within Big Brother and The Challenge, the same normalized full name or the same nickname + surname. Mentions connect to shared "identity nodes" (e.g. `chname:faysal shafaat`) instead of to each other, which keeps the edge count small.
+- **Cross-show:** the automatic origin-season matches (D008).
+- **Manual:** `seeds/crosswalk_manual.csv` for hand-checked links with no origin season to block on (e.g. Big Brother ↔ Survivor crossovers). A test fails if any row doesn't resolve to exactly one record on each side, so a typo can't slip through.
+- **Single-word names are never merged by name**, since some early seasons list cast by first name only.
+**Guards against over-merging:** a person can't hold two survivoR castaway IDs (error), and shouldn't appear twice in one season (warn).
+**Review queue:** `int_crossover_candidates` lists same-surname pairs in different shows that weren't linked and look alike (≥ 0.90). Confirmed pairs move into the crosswalk seed.
+**Why a graph:** evidence chains naturally. A Challenge vet linked to Big Brother 20 in one season automatically joins their other Challenge seasons and any Big Brother All-Stars return, with no need to compare every pair directly.
+
+## D010 — Big Brother houseguests can point at their Survivor season too
+**Date:** 2026-11-21
+**Found by:** reviewing dim_person by eye. Dee Valladares (Survivor 45) showed no Big Brother season, although she played BB28 alongside Rick Devens (Survivor: Edge of Extinction). Nothing linked them: Big Brother records have no "Original season" column to block on.
+**Decision:** Wikipedia lists returning players' earlier shows in the Big Brother Name cell (already split into `prior_shows_note`, D006). The first Survivor reference there ("Survivor 45", "Survivor: Edge of Extinction") becomes an `origin_season_key`, and the origin matcher (renamed `int_origin_matches`) now handles Big Brother sources as well as Challenge ones. Same blocking, scoring and thresholds.
+**Fallback:** if a page doesn't list the earlier show, the pair shows up in the `int_crossover_candidates` review queue and is confirmed into `crosswalk_manual.csv`.
+
+## D011 — Crosswalk seed: confirmed crossovers and reviewed non-matches
+**Date:** 2026-11-21
+**Decision:** `crosswalk_manual.csv` gets a `decision` column. `same` rows add a link; `different` rows record a pair that was reviewed and rejected, so it stops appearing in the review queue.
+**Seeded from domain knowledge (project owner):** the five Big Brother ↔ Survivor crossovers: Cirie Fields (Survivor → BB25), Dee Valladares and Rick Devens (Survivor → BB28), Caleb Reynolds (BB16 → Survivor: Kaôh Rōng) and Hayden Moss (BB12 → Survivor: Blood vs. Water). BB → Survivor crossovers can't be found automatically: survivoR records don't list earlier shows.
+**Also a verified test set:** these hand-confirmed pairs double as ground truth for measuring the automatic matcher (D010 should find the three Survivor → BB players on its own).
+- *First review pass:* Natalie Anderson (Challenge: Double Agents) confirmed as the Survivor: San Juan del Sur winner. The Challenge lists her origin as The Amazing Race 23, so origin-season blocking couldn't find her. Six surname-only lookalikes (incl. two different Nick Browns) were marked `different`.
+- *Seed schema change:* adding the `decision` column changes the seed's table shape, so the seed had to be reloaded with `dbt seed --full-refresh`. Without it, the seed load fails and the downstream marts keep stale data.
+- *Rejections apply to people, not season pairs:* after the first pass, Nick Brown, Adria/Adam Klein and Nia/Nate Moore came back through their *other* seasons (e.g. Adam Klein's Winners at War season). `different` rows are now resolved to person IDs, so one review silences the pair for good.
+- *Result:* 1,574 people from 2,762 appearances; 56 cross-show people; 0 over-merges; 80 dbt checks passing.
