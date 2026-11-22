@@ -51,7 +51,7 @@ row_attributes as (
     select
         season_key, table_index, row_index,
         max(case when column_header ilike '%original%'
-                   or column_header ilike '%known for%'           then value end) as original_season,
+                   or column_header ilike '%known f%'             then value end) as original_season,
         max(case when column_header ilike '%finish%'
                    or column_header ilike 'result%'               then value end) as finish_raw
     from cells
@@ -62,76 +62,96 @@ names as (
     select season_key, table_index, row_index, col_index, column_header, value as contestant_name
     from cells
     where regexp_matches(lower(column_header),
-              'contestant|partner|^cast|^name|player|mercenar|veteran|rookie|relative|famil|challenger|champion|member|pro')
-      and not regexp_matches(lower(column_header), 'original|known for|finish|result|episode')
+              'contestant|partner|^cast|^name|player|mercenar|veteran|rookie|relative|famil|challenger|champion|member|pro|alumni|fresh meat|bloodline')
+      and not regexp_matches(lower(column_header), 'original|known f|finish|result|episode|relation')
       and value is not null
       and value <> column_header            -- repeated header rows
+),
+
+joined as (
+    select
+        n.season_key || '_' || n.table_index || '_' || lpad(cast(n.row_index as varchar), 2, '0')
+            || '_' || n.col_index                                     as contestant_key,
+        n.season_key,
+        n.contestant_name,
+        n.column_header,
+        -- Paired formats list two people per row but only one Original season:
+        -- Fresh Meat seasons pair a veteran with a rookie, Battle of the
+        -- Bloodlines pairs a veteran with a relative. The second person's
+        -- origin comes from the column they're in. See D007.
+        case
+            when n.column_header ilike 'fresh meat%' then 'The Challenge: Fresh Meat (rookie)'
+            when n.column_header ilike 'bloodline%'  then 'Bloodline relative (new to TV)'
+            else a.original_season
+        end                                                           as original_season,
+        a.finish_raw
+    from names as n
+    left join row_attributes as a
+        on n.season_key = a.season_key
+       and n.table_index = a.table_index
+       and n.row_index = a.row_index
 )
 
 select
-    n.season_key || '_' || n.table_index || '_' || lpad(cast(n.row_index as varchar), 2, '0')
-        || '_' || n.col_index                                         as contestant_key,
-    n.season_key,
-    n.contestant_name,
+    contestant_key,
+    season_key,
+    contestant_name,
     case
-        when n.column_header ilike 'female%' then 'Female'
-        when n.column_header ilike 'male%'   then 'Male'
+        when column_header ilike 'female%' then 'Female'
+        when column_header ilike 'male%'   then 'Male'
     end                                                               as gender_from_table,
-    (n.column_header ilike '%mercenar%')                              as is_mercenary,
-    a.original_season,
+    (column_header ilike '%mercenar%')                                as is_mercenary,
+    original_season,
     case
-        when a.original_season ilike '%real world%'          then 'The Real World'
-        when a.original_season ilike '%road rules%'          then 'Road Rules'
-        when a.original_season ilike '%fresh meat%'          then 'The Challenge: Fresh Meat'
-        when a.original_season ilike '%are you the one%'     then 'Are You the One?'
-        when a.original_season ilike '%ex on the beach%'     then 'Ex on the Beach'
-        when a.original_season ilike '%survivor%'            then 'Survivor'
-        when a.original_season ilike '%big brother%'         then 'Big Brother'
-        when a.original_season ilike '%amazing race%'        then 'The Amazing Race'
-        when a.original_season ilike '%love island%'         then 'Love Island'
-        when a.original_season ilike '%geordie shore%'       then 'Geordie Shore'
-        when a.original_season ilike '%too hot to handle%'   then 'Too Hot to Handle'
-        when a.original_season ilike '%floribama%'           then 'Floribama Shore'
-        when a.original_season ilike '%traitors%'            then 'The Traitors'
-        when a.original_season ilike '%challenge%'           then 'The Challenge'
-        when a.original_season ilike '%n/a%'
-          or a.original_season = '—'                         then 'None (new to TV)'
-        when a.original_season is null                       then null
+        when original_season ilike '%real world%'          then 'The Real World'
+        when original_season ilike '%road rules%'          then 'Road Rules'
+        when original_season ilike '%fresh meat%'          then 'The Challenge: Fresh Meat'
+        when original_season ilike '%are you the one%'     then 'Are You the One?'
+        when original_season ilike '%ex on the beach%'     then 'Ex on the Beach'
+        when original_season ilike '%survivor%'            then 'Survivor'
+        when original_season ilike '%big brother%'         then 'Big Brother'
+        when original_season ilike '%amazing race%'        then 'The Amazing Race'
+        when original_season ilike '%love island%'         then 'Love Island'
+        when original_season ilike '%geordie shore%'       then 'Geordie Shore'
+        when original_season ilike '%too hot to handle%'   then 'Too Hot to Handle'
+        when original_season ilike '%floribama%'           then 'Floribama Shore'
+        when original_season ilike '%traitors%'            then 'The Traitors'
+        when original_season ilike '%challenge%'           then 'The Challenge'
+        when original_season ilike '%n/a%'
+          or original_season = '—'
+          or original_season ilike '%new to tv%'           then 'None (new to TV)'
+        when original_season is null                       then null
         else 'Other'
     end                                                               as origin_show,
     -- "Big Brother 20" vs "Big Brother UK 17": only US versions can link to
     -- the Survivor / Big Brother data in this warehouse.
     case
-        when a.original_season is null then null
-        when regexp_matches(lower(a.original_season),
+        when original_season is null then null
+        when regexp_matches(lower(original_season),
              'turkey|român|roman|spain|españa|uk\b|nigeria|australia|canada|celebrity|brasil|brazil|mexic|argentin|south africa|new zealand|over the top')
              then false
         else true
     end                                                               as origin_is_us_version,
-    a.finish_raw,
+    finish_raw,
     case
-        when a.finish_raw ilike 'winner%'
-          or a.finish_raw ilike 'champion%'                  then 'winner'
-        when a.finish_raw ilike 'runner%'
-          or a.finish_raw ilike '%second place%'             then 'runner_up'
-        when a.finish_raw ilike '%third place%'              then 'third_place'
-        when a.finish_raw ilike '%place%'
-          or a.finish_raw ilike 'finalist%'                  then 'finalist'
-        when a.finish_raw ilike '%disqualified%'             then 'disqualified'
-        when a.finish_raw ilike '%quit%'
-          or a.finish_raw ilike '%withdr%'
-          or a.finish_raw ilike '%left%'                     then 'quit'
-        when a.finish_raw ilike '%medical%'
-          or a.finish_raw ilike '%injur%'                    then 'medical'
-        when a.finish_raw ilike '%eliminated%'
-          or a.finish_raw ilike '%voted off%'
-          or a.finish_raw ilike '%lost%'
-          or a.finish_raw ilike 'episode%'                   then 'eliminated'  -- "Episode 8" = out in episode 8
-        when a.finish_raw ilike '%removed%'                  then 'removed'
+        when finish_raw ilike 'winner%'
+          or finish_raw ilike 'champion%'                  then 'winner'
+        when finish_raw ilike 'runner%'
+          or finish_raw ilike '%second place%'             then 'runner_up'
+        when finish_raw ilike '%third place%'              then 'third_place'
+        when finish_raw ilike '%place%'
+          or finish_raw ilike 'finalist%'                  then 'finalist'
+        when finish_raw ilike '%disqualified%'             then 'disqualified'
+        when finish_raw ilike '%quit%'
+          or finish_raw ilike '%withdr%'
+          or finish_raw ilike '%left%'                     then 'quit'
+        when finish_raw ilike '%medical%'
+          or finish_raw ilike '%injur%'                    then 'medical'
+        when finish_raw ilike '%eliminated%'
+          or finish_raw ilike '%voted off%'
+          or finish_raw ilike '%lost%'
+          or finish_raw ilike 'episode%'                   then 'eliminated'  -- "Episode 8" = out in episode 8
+        when finish_raw ilike '%removed%'                  then 'removed'
     end                                                               as finish_type,
-    try_cast(regexp_extract(a.finish_raw, 'Episode (\d+)', 1) as integer) as exit_episode
-from names as n
-left join row_attributes as a
-    on n.season_key = a.season_key
-   and n.table_index = a.table_index
-   and n.row_index = a.row_index
+    try_cast(regexp_extract(finish_raw, 'Episode (\d+)', 1) as integer) as exit_episode
+from joined

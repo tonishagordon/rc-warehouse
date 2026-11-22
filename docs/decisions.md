@@ -51,6 +51,7 @@ A running record of modeling choices and why they were made.
 **Details from the first build:**
 - 4 seasons (Fresh Meat, The Ruins, Fresh Meat II, Battle of the Bloodlines) put their cast under sub-headings (e.g. Veterans / Rookies), so 0 contestants were found. For seasons with no Contestants/Cast section, any table with an "Original season" column is used instead.
 - Finish values like "Episode 8" mean eliminated in episode 8; "Finalist" is its own type. Early seasons with no Finish column aren't tested for it.
-- Champs vs. Pros/Stars use "Known for" instead of "Original season" (athletes and celebrities).
+- Champs vs. Pros/Stars use "Known for" / "Known From" instead of "Original season" (athletes and celebrities).
+- Paired formats list two people per row with one Original season: Fresh Meat I/II pair an "Alumni" veteran with a "Fresh Meat" rookie, and Battle of the Bloodlines pairs an "Alumni" veteran with a "Bloodline" relative. The second person's origin is set from their column (rookie / relative new to TV), not copied from the veteran's.
 - `origin_is_us_version` separates "Big Brother 20" from "Big Brother UK 17" or "Survivor Turkey 8": only US versions can link to this warehouse's Survivor and Big Brother data.
 - The same person appears under different names across seasons (e.g. Faysal Shafaat vs. Faysal "Fessy" Shafaat). Resolving that is the entity-resolution step, not staging.
