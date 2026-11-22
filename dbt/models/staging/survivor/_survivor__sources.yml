@@ -1,0 +1,32 @@
+version: 2
+
+sources:
+  - name: survivor
+    description: >
+      Raw sheets from the survivoR dataset (Daniel Oehm, MIT license),
+      loaded as-is by ingest/load_survivor.py. Covers US and international
+      versions; staging models filter to the US version.
+    schema: raw_survivor
+    tables:
+      - name: advantage_details
+      - name: advantage_movement
+      - name: advantage_timeline
+      - name: auction_details
+      - name: boot_mapping
+      - name: boot_order
+      - name: castaway_details
+      - name: castaway_scores
+      - name: castaways
+      - name: challenge_description
+      - name: challenge_results
+      - name: challenge_summary
+      - name: confessionals
+      - name: episodes
+      - name: journeys
+      - name: jury_votes
+      - name: season_summary
+      - name: survivor_auction
+      - name: tribe_colours
+      - name: tribe_mapping
+      - name: viewers
+      - name: vote_history

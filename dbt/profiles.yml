@@ -1,0 +1,10 @@
+# Run dbt from inside the dbt/ folder; it finds this file automatically.
+# No secrets here: DuckDB is a local file, so this is safe to commit.
+rc_warehouse:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: ../warehouse.duckdb
+      schema: main
+      threads: 4
