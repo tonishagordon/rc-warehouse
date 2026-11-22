@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: stg_challenge__seasons
+    description: In-scope Challenge seasons (main MTV series + US spin-offs).
+    columns:
+      - name: season_key
+        data_tests: [unique, not_null]
+
+  - name: stg_challenge__contestants
+    description: >
+      One row per contestant per Challenge season, from each season page's
+      Contestants/Cast tables. origin_show groups the free-text Original
+      season (e.g. "Big Brother 23" -> Big Brother) for cross-show analysis.
+    columns:
+      - name: contestant_key
+        data_tests: [unique, not_null]
+      - name: season_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_challenge__seasons')
+                field: season_key
+      - name: finish_type
+        description: Null = Finish text not recognized (warn). Seasons with no Finish column are not tested.
+        data_tests:
+          - not_null:
+              config:
+                severity: warn
+                where: "finish_raw is not null"
+      - name: origin_show
+        data_tests:
+          - not_null:
+              config:
+                severity: warn

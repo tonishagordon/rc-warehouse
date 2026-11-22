@@ -43,3 +43,14 @@ A running record of modeling choices and why they were made.
 - BB04's last column is headed "Week 11", not "Finale", so its jury votes were counted as eviction votes. A column is now treated as the finale if its header says Finale **or** its result row says "votes to win".
 - Houseguests with two result rows are mostly in-season returns (e.g. Amy BB3, Kaysar BB6, BB21's Camp Comeback). Staging keeps every row; intermediate picks the final outcome.
 - Returning players' prior seasons are split out of the Name cell into `prior_shows_note`, a free signal for cross-show matching later.
+
+## D007 — The Challenge: appearances first, eliminations later
+**Date:** 2026-11-21
+**Decision:** Model who played each season, their original show and their finish first (from each season page's Contestants/Cast tables). Elimination charts (33 seasons, layout changes almost every season) come later.
+**Why:** The Contestants tables carry an "Original season" column, which is exactly what links The Challenge to Survivor and Big Brother. That's the core of the project, so it's built before the hardest parsing.
+**Details from the first build:**
+- 4 seasons (Fresh Meat, The Ruins, Fresh Meat II, Battle of the Bloodlines) put their cast under sub-headings (e.g. Veterans / Rookies), so 0 contestants were found. For seasons with no Contestants/Cast section, any table with an "Original season" column is used instead.
+- Finish values like "Episode 8" mean eliminated in episode 8; "Finalist" is its own type. Early seasons with no Finish column aren't tested for it.
+- Champs vs. Pros/Stars use "Known for" instead of "Original season" (athletes and celebrities).
+- `origin_is_us_version` separates "Big Brother 20" from "Big Brother UK 17" or "Survivor Turkey 8": only US versions can link to this warehouse's Survivor and Big Brother data.
+- The same person appears under different names across seasons (e.g. Faysal Shafaat vs. Faysal "Fessy" Shafaat). Resolving that is the entity-resolution step, not staging.

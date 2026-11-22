@@ -1,0 +1,15 @@
+version: 2
+
+sources:
+  - name: challenge
+    description: >
+      The Challenge (MTV main series + US spin-offs) season pages from
+      Wikipedia (CC BY-SA 4.0), plus the "List of The Challenge (TV series)
+      contestants" page (key CONTESTANTS). Saved by ingest/scrape_challenge.py,
+      flattened to cells by ingest/load_challenge.py.
+    schema: raw_challenge
+    tables:
+      - name: season_index
+        description: Season list from discover_challenge.py; include = 'N' rows (international versions) are excluded.
+      - name: wiki_tables
+      - name: wiki_cells
