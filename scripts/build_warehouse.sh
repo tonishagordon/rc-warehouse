@@ -14,3 +14,7 @@ python ingest/load_traitors.py
 echo "== Transform + test (dbt) =="
 cd dbt
 dbt build
+
+echo "== Export marts for the app =="
+cd ..
+python scripts/export_marts.py

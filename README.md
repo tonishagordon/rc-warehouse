@@ -11,7 +11,7 @@ One warehouse for **Survivor, Big Brother, The Challenge and The Traitors**, bui
 | **People / appearances** | 1,637 people resolved from 2,850 season appearances |
 | **Cross-show careers** | 77 people who competed on more than one show |
 | **Data quality** | 109 automated dbt tests, 0 failures, 0 warnings · rebuilt and tested on every push |
-| **Design decisions** | 14 documented in [`docs/decisions.md`](docs/decisions.md) |
+| **Design decisions** | 15 documented in [`docs/decisions.md`](docs/decisions.md) |
 
 **Stack:** Python (requests, BeautifulSoup, pandas) · DuckDB · dbt Core · GitHub Actions · GitHub Pages
 
@@ -159,6 +159,21 @@ Alums are far more likely to be made Traitors and to be banished, and they're mu
 
 ---
 
+## Explore it: the app
+
+A Streamlit app sits on the marts (Parquet exports in `data/marts/`, D015):
+
+- **Career Explorer:** pick anyone and see every season they played, in order, across all four shows
+- **Feeder Show Report:** first-Challenge performance by where players first became known (Survivor, Big Brother, The Real World, Are You the One?…)
+- **The Strategist Penalty:** Traitors outcomes for Survivor/Big Brother alums vs. everyone else
+
+```bash
+pip install -r app/requirements.txt
+streamlit run app/streamlit_app.py
+```
+
+---
+
 ## Run it yourself
 
 ```bash
@@ -167,7 +182,7 @@ cd rc-warehouse
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-bash scripts/build_warehouse.sh        # load raw snapshots + dbt build (models + tests)
+bash scripts/build_warehouse.sh        # load raw snapshots + dbt build (models + tests) + export marts
 cd dbt && dbt docs generate && dbt docs serve   # optional: browse docs locally
 ```
 
@@ -187,8 +202,9 @@ dbt/
   seeds/                crosswalk_manual.csv (hand-checked same/different links)
   tests/                custom data tests (over-merge guards, crosswalk validation, date order…)
   macros/               normalize_name, nickname, origin_show
-docs/decisions.md  14 design decisions, including the bugs that tests and reviews caught
-scripts/           build_warehouse.sh
+docs/decisions.md  15 design decisions, including the bugs that tests and reviews caught
+scripts/           build_warehouse.sh · export_marts.py
+app/               streamlit_app.py (reads data/marts/*.parquet)
 ```
 
 ---
@@ -201,7 +217,6 @@ scripts/           build_warehouse.sh
 
 ## Roadmap
 
-- Streamlit app: Career Explorer, Feeder Show Report by origin show, Strategist Penalty
 - Challenge elimination charts (`fct_elimination_event`)
 - Voting facts across shows (Survivor tribal votes, Big Brother eviction votes, Traitors round tables)
 

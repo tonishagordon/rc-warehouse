@@ -8,6 +8,9 @@ with base as (
         b.show_name,
         b.season_key,
         b.display_name                       as name_as_billed,
+        -- where the cast table says this person came from (Challenge
+        -- "Original season", Traitors "Notability"); null for Survivor/BB
+        case when b.show_name in ('challenge', 'traitors') then b.prior_shows_note end as origin_listed,
         o.result_category,
         o.exit_method,
         o.game_role,
@@ -51,6 +54,8 @@ select
     premiered_date,
     premiered_year,
     name_as_billed,
+    origin_listed,
+    {{ origin_show('origin_listed') }}                          as origin_show_listed,
     result_category,
     exit_method,
     game_role,

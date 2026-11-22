@@ -121,3 +121,8 @@ A running record of modeling choices and why they were made.
 **Fix:** `normalize_name()` and `nickname()` turn Unicode space characters into normal spaces *before* anything else (`plain_spaces` macro). A new warn-level test checks that every multi-word display name still normalizes to a multi-word name, so this class of bug is caught automatically.
 **Lesson:** look at the transformed values, not just the match scores. The scoring rules were right; the input was silently wrong.
 **Also:** Bananas' debut on The Duel (CH13), billed as "John Devenanzio", is confirmed as the same person (crosswalk, project owner).
+
+## D015 — Serving layer: Parquet exports + a person "background"
+**Date:** 2026-11-22
+**Decision:** The Streamlit app reads Parquet exports of the four marts (`data/marts/`, written by `scripts/export_marts.py`) rather than the DuckDB file. The exports are small, committed, and let the app deploy without running the pipeline.
+**New fields:** `fct_appearance.origin_listed` / `origin_show_listed` (what the Challenge or Traitors cast table says the person is from) and `dim_person.debut_show` / `background`. Background is Survivor or Big Brother if the person debuted there, otherwise the origin show their first cast table lists (The Real World, Are You the One?, Love Island…). This splits the old catch-all "challenge" group in the Feeder Show Report.
