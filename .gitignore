@@ -17,3 +17,4 @@ dbt/logs/
 Thumbs.db
 .vscode/
 .idea/
+*:Zone.Identifier
