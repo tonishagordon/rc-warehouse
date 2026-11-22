@@ -19,3 +19,4 @@ Thumbs.db
 .idea/
 *:Zone.Identifier
 dbt/.user.yml
+site/
