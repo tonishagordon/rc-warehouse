@@ -36,6 +36,10 @@ scored as (
             case when c.last_name_norm = m.last_name_norm
                   and (c.nickname_norm  in (m.first_name_norm, m.nickname_norm)
                     or m.nickname_norm  in (c.first_name_norm, c.nickname_norm)) then 0.97 end,
+            -- nickname + surname is the other record's whole name:
+            -- Yamil "Yam Yam" Arocho -> "yam yam arocho" (D013)
+            case when c.nickname_norm || ' ' || c.last_name_norm = m.name_norm
+                   or m.nickname_norm || ' ' || m.last_name_norm = c.name_norm then 0.97 end,
             jaro_winkler_similarity(c.name_norm, m.name_norm)
         )                                   as score
     from sources as c

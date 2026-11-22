@@ -10,6 +10,7 @@ with base as (
         b.display_name                       as name_as_billed,
         o.result_category,
         o.exit_method,
+        o.game_role,
         o.result_raw,
         o.finish_place_final                 as finish_place,
         o.exit_day,
@@ -52,6 +53,7 @@ select
     name_as_billed,
     result_category,
     exit_method,
+    game_role,
     finish_place,
     cast_size,
     -- 1.0 = won, 0.0 = first out; comparable across shows of different sizes

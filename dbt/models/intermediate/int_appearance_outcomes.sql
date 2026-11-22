@@ -2,8 +2,9 @@
 -- one shared vocabulary (D012):
 --   result_category: winner / runner_up / finalist / eliminated / quit /
 --                    removed / medical / in_progress / unknown
---   exit_method:     jury_vote / final_challenge / vote_out / eviction /
---                    banished / elimination_round / quit / removed / medical
+--   exit_method:     jury_vote / final_challenge / final_vote / vote_out /
+--                    eviction / banished / murdered / elimination_round /
+--                    quit / removed / medical
 -- plus a finish_place (1 = won) computed the same way for every show.
 -- Grain: one row per mention (person x season x show).
 
@@ -33,7 +34,8 @@ with survivor as (
             when c.result ilike '%medic%' or c.result ilike '%evacuat%' then 'medical'
             when c.result ilike '%eject%' or c.result ilike '%removed%' then 'removed'
             when c.result is not null                               then 'elimination_round'  -- fire-making, etc.
-        end                                         as exit_method
+        end                                         as exit_method,
+        cast(null as varchar)                       as game_role
     from {{ ref('stg_survivor__castaways') }} as c
     inner join {{ ref('stg_survivor__seasons') }} as s on s.season_key = c.season_key
 ),
@@ -83,7 +85,8 @@ bigbrother as (
             when 'exited'      then 'elimination_round'
             when 'walked'      then 'quit'
             when 'expelled'    then 'removed'
-        end                                         as exit_method
+        end                                         as exit_method,
+        cast(null as varchar)                       as game_role
     from bigbrother_rows
     where rn = 1
 ),
@@ -118,14 +121,54 @@ challenge as (
             when 'medical'      then 'medical'
             when 'disqualified' then 'removed'
             when 'removed'      then 'removed'
-        end                                         as exit_method
+        end                                         as exit_method,
+        cast(null as varchar)                       as game_role
     from {{ ref('stg_challenge__contestants') }}
+),
+
+-- The Traitors: players banished in the season's LAST episode were in the
+-- end game, so they count as finalists. Role (Faithful / Traitor) is kept as
+-- game_role for the Strategist Penalty analysis.
+traitors_base as (
+    select
+        *,
+        max(exit_episode) over (partition by season_key) as final_episode
+    from {{ ref('stg_traitors__contestants') }}
+),
+
+traitors as (
+    select
+        'traitors|' || contestant_key               as mention_key,
+        season_key,
+        cast(null as integer)                       as finish_place,
+        finish_raw                                  as result_raw,
+        cast(null as integer)                       as exit_day,
+        exit_episode                                as exit_point,   -- episode
+        case
+            when finish_type = 'winner'                                   then 'winner'
+            when finish_type = 'runner_up'                                then 'runner_up'
+            when finish_type in ('banished', 'eliminated')
+             and exit_episode = final_episode                             then 'finalist'
+            when finish_type in ('banished', 'murdered', 'eliminated')    then 'eliminated'
+            when finish_type = 'walked'                                   then 'quit'
+            else 'unknown'
+        end                                         as result_category,
+        case
+            when finish_type in ('winner', 'runner_up')                   then 'final_vote'
+            when finish_type = 'banished'                                 then 'banished'
+            when finish_type = 'murdered'                                 then 'murdered'
+            when finish_type = 'eliminated'                               then 'final_vote'
+            when finish_type = 'walked'                                   then 'quit'
+        end                                         as exit_method,
+        role                                        as game_role
+    from traitors_base
 ),
 
 unioned as (
     select * from survivor
     union all select * from bigbrother
     union all select * from challenge
+    union all select * from traitors
 )
 
 select

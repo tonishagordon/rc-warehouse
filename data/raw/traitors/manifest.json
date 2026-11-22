@@ -1,0 +1,30 @@
+{
+  "TR01": {
+    "season": 1,
+    "title": "The Traitors (American TV series) season 1",
+    "revid": 1383213102,
+    "fetched_at": "2026-11-22T19:36:04.226303+00:00",
+    "file": "TR01.html.gz"
+  },
+  "TR02": {
+    "season": 2,
+    "title": "The Traitors (American TV series) season 2",
+    "revid": 1383212216,
+    "fetched_at": "2026-11-22T19:36:05.994460+00:00",
+    "file": "TR02.html.gz"
+  },
+  "TR03": {
+    "season": 3,
+    "title": "The Traitors (American TV series) season 3",
+    "revid": 1386824698,
+    "fetched_at": "2026-11-22T19:36:08.994169+00:00",
+    "file": "TR03.html.gz"
+  },
+  "TR04": {
+    "season": 4,
+    "title": "The Traitors (American TV series) season 4",
+    "revid": 1386786020,
+    "fetched_at": "2026-11-22T19:36:11.529935+00:00",
+    "file": "TR04.html.gz"
+  }
+}

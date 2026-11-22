@@ -1,5 +1,6 @@
 -- Every appearance of a person in any show, in one shape, with normalized
--- names. This is the input to entity resolution: "who is the same person?"
+-- names (Survivor, Big Brother, The Challenge, The Traitors). This is the
+-- input to entity resolution: "who is the same person?"
 --
 -- Grain: one row per person per season per show.
 -- origin_season_key points at an earlier season the person came from, when
@@ -94,12 +95,40 @@ challenge as (
         on lower(strip_accents(c.original_season)) = ss.season_name_norm
 ),
 
+traitors as (
+    select
+        'traitors|' || t.contestant_key                 as mention_key,
+        'traitors'                                      as show_name,
+        t.season_key,
+        cast(null as varchar)                           as source_person_id,
+        t.contestant_name                               as display_name,
+        {{ normalize_name('t.contestant_name') }}       as name_norm,
+        {{ nickname('t.contestant_name') }}             as nickname_norm,
+        -- Notability "Big Brother 14" / "Survivor: Cook Islands" -> that season
+        case
+            when t.origin_show = 'Big Brother' and t.origin_is_us_version
+             and regexp_matches(t.notability, '^Big Brother \d+$')
+                then 'BB' || lpad(regexp_extract(t.notability, '(\d+)', 1), 2, '0')
+            when t.origin_show = 'Survivor' and t.origin_is_us_version
+                then coalesce(
+                    ss.season_key,
+                    case when regexp_matches(t.notability, '^Survivor \d+$')
+                         then 'US' || lpad(regexp_extract(t.notability, '(\d+)', 1), 2, '0') end)
+        end                                             as origin_season_key,
+        t.notability                                    as prior_shows_note
+    from {{ ref('stg_traitors__contestants') }} as t
+    left join survivor_seasons as ss
+        on lower(strip_accents(t.notability)) = ss.season_name_norm
+),
+
 unioned as (
     select * from survivor
     union all
     select * from bigbrother
     union all
     select * from challenge
+    union all
+    select * from traitors
 )
 
 select

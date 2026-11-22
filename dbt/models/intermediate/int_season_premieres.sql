@@ -1,10 +1,19 @@
--- Premiere and finale dates for Big Brother and Challenge seasons, read from
+-- Premiere and finale dates for Big Brother, Challenge and Traitors seasons, read from
 -- the "Episodes" table on each season page (survivoR already has dates).
 -- Dates are needed to put a person's appearances in career order across shows.
 with cells as (
     select 'bigbrother' as show_name, t.season_key, c.table_index, c.row_index, c.value
     from {{ source('bigbrother', 'wiki_tables') }} as t
     inner join {{ source('bigbrother', 'wiki_cells') }} as c
+        on c.season_key = t.season_key and c.table_index = t.table_index
+    where t.section ilike 'episodes%'
+      and c.column_header ilike '%date%'
+
+    union all
+
+    select 'traitors', t.season_key, c.table_index, c.row_index, c.value
+    from {{ source('traitors', 'wiki_tables') }} as t
+    inner join {{ source('traitors', 'wiki_cells') }} as c
         on c.season_key = t.season_key and c.table_index = t.table_index
     where t.section ilike 'episodes%'
       and c.column_header ilike '%date%'

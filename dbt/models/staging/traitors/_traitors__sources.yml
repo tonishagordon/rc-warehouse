@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: traitors
+    description: >
+      The Traitors (US) season pages from Wikipedia (CC BY-SA 4.0), saved by
+      ingest/scrape_traitors.py and flattened to cells by ingest/load_traitors.py.
+    schema: raw_traitors
+    tables:
+      - name: wiki_tables
+      - name: wiki_cells

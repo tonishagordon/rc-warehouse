@@ -51,10 +51,29 @@ challenge as (
         on w.season_key = s.season_key
 ),
 
+traitors as (
+    select
+        s.season_key,
+        'traitors'                      as show_name,
+        'The Traitors'                  as series,
+        s.season_number,
+        s.season_name,
+        p.premiered_date,
+        p.finale_date,
+        bool_or(c.finish_type = 'winner') as is_season_complete
+    from {{ ref('stg_traitors__seasons') }} as s
+    left join {{ ref('int_season_premieres') }} as p
+        on p.show_name = 'traitors' and p.season_key = s.season_key
+    left join {{ ref('stg_traitors__contestants') }} as c
+        on c.season_key = s.season_key
+    group by all
+),
+
 seasons as (
     select * from survivor
     union all select * from bigbrother
     union all select * from challenge
+    union all select * from traitors
 ),
 
 cast_sizes as (

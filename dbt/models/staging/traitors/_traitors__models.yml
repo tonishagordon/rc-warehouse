@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: stg_traitors__seasons
+    columns:
+      - name: season_key
+        data_tests: [unique, not_null]
+
+  - name: stg_traitors__contestants
+    description: >
+      One row per contestant per Traitors season: notability (where they came
+      from, grouped into origin_show), role (Faithful / Traitor), and finish.
+    columns:
+      - name: contestant_key
+        data_tests: [unique, not_null]
+      - name: role
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['Faithful', 'Traitor']
+      - name: finish_type
+        data_tests:
+          - not_null:
+              config:
+                severity: warn

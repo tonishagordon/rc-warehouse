@@ -106,3 +106,18 @@ A running record of modeling choices and why they were made.
 **Career order:** BB and Challenge premiere dates are parsed from each season page's Episodes table (survivoR already has dates), so appearances can be ordered across shows: `career_appearance_number`, `debut_show`, `is_cross_show_debut`.
 **Known limitation:** Challenge seasons that crown pairs or teams have several winners, and players eliminated in the same episode tie. Fine for percentiles; flagged by a warn-level test.
 - *Date fix:* the first build showed Big Brother seasons from **1988** to 2025, which is impossible (BB1 aired in 2000 and BB28 in 2026). Taking the min/max of every date in the Episodes table picked up stray dates. Premiere and finale now come from the first and last episode rows, dates before 1998 are ignored, and a warn-level test checks that season premieres run in order.
+
+## D013 — The Traitors: a 4th show, added without redesign
+**Date:** 2026-11-22
+**What was reused unchanged:** the Wikipedia fetcher, the cell-level loader (D005), name normalization, origin-season blocking (D008), the graph clustering (D009), the crosswalk seed (D011) and the shared outcome vocabulary (D012). New code: a scrape/load script pair, two staging models, and one extra union branch in each conformed model.
+**New in the vocabulary:** `exit_method` gains `murdered` and `final_vote` (Traitors end game). `fct_appearance` gains `game_role` (Faithful / Traitor; null for other shows). Players banished in a season's last episode count as finalists (they reached the end game).
+**New matching rule: shared origin note.** Traitors lists Challenge vets by their *original* show ("The Real World: Key West"), exactly as the Challenge pages do. Same full name + the same origin text links the Traitors and Challenge records. Survivor and Big Brother alums go through the normal origin-season matcher ("Big Brother 14" → BB14).
+**Shared macros:** `origin_show()` and `origin_is_us_version()` now live in macros/origin_show.sql. Challenge staging still has an older inline copy, a known refactor.
+- *First Traitors build:* 108 checks passing. 18 of 19 Survivor/BB alums auto-matched to their origin season. The shared-origin-note rule linked Bananas, CT, Wes and Trishelle to their Challenge careers. The one review case, Yamil "Yam Yam" Arocho (Survivor 44), is billed on survivoR as "Yam Yam Arocho": a two-word nickname is his whole first name there. New scoring rule: nickname + surname equal to the other record's full name scores 0.97.
+
+## D014 — Hidden characters: non-breaking spaces in names
+**Date:** 2026-11-22
+**Found by:** Yam Yam Arocho (Survivor 44 → Traitors 4) stayed in review even after the nickname rule. Inspecting the normalized names showed survivoR's "Yam Yam Arocho" had become **"yamyamarocho"**: the source uses non-breaking spaces (U+00A0), and the punctuation-removal step deleted them along with the punctuation.
+**Fix:** `normalize_name()` and `nickname()` turn Unicode space characters into normal spaces *before* anything else (`plain_spaces` macro). A new warn-level test checks that every multi-word display name still normalizes to a multi-word name, so this class of bug is caught automatically.
+**Lesson:** look at the transformed values, not just the match scores. The scoring rules were right; the input was silently wrong.
+**Also:** Bananas' debut on The Duel (CH13), billed as "John Devenanzio", is confirmed as the same person (crosswalk, project owner).

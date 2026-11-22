@@ -23,22 +23,36 @@ identity_edges as (
 
     union all
     select mention_key,
-           case show_name when 'bigbrother' then 'bbname:' else 'chname:' end || name_norm,
+           case show_name when 'bigbrother' then 'bbname:' when 'traitors' then 'trname:' else 'chname:' end || name_norm,
            'same_show_full_name'
     from m
-    where show_name in ('bigbrother', 'challenge')
+    where show_name in ('bigbrother', 'challenge', 'traitors')
       and name_norm like '% %'
 
     union all
     select mention_key,
-           case show_name when 'bigbrother' then 'bbname:' else 'chname:' end
+           case show_name when 'bigbrother' then 'bbname:' when 'traitors' then 'trname:' else 'chname:' end
                || nickname_norm || ' ' || last_name_norm,
            'same_show_nickname'
     from m
-    where show_name in ('bigbrother', 'challenge')
+    where show_name in ('bigbrother', 'challenge', 'traitors')
       and nickname_norm is not null
       and last_name_norm is not null
       and name_norm like '% %'
+),
+
+-- Traitors <-> Challenge: Traitors lists a Challenge vet by their ORIGINAL
+-- show ("The Real World: Key West"), exactly as the Challenge pages do. Same
+-- full name + the same origin note = same person. (D013)
+traitors_challenge_edges as (
+    select t.mention_key as a, c.mention_key as b, 'shared_origin_note' as edge_type
+    from m as t
+    inner join m as c
+        on c.show_name = 'challenge'
+       and c.name_norm = t.name_norm
+       and lower(strip_accents(c.prior_shows_note)) = lower(strip_accents(t.prior_shows_note))
+    where t.show_name = 'traitors'
+      and t.name_norm like '% %'
 ),
 
 cross_show_edges as (
@@ -67,6 +81,8 @@ manual_edges as (
 )
 
 select * from identity_edges
+union all
+select * from traitors_challenge_edges
 union all
 select * from cross_show_edges
 union all

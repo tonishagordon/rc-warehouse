@@ -8,7 +8,7 @@ with s as (
            lag(premiered_date) over (partition by show_name, series order by season_number) as prev_premiere,
            lag(season_key)     over (partition by show_name, series order by season_number) as prev_season
     from {{ ref('dim_season') }}
-    where series in ('Survivor', 'Big Brother', 'The Challenge')
+    where series in ('Survivor', 'Big Brother', 'The Challenge', 'The Traitors')
 )
 select * from s
 where premiered_date < prev_premiere

@@ -16,7 +16,7 @@ models:
 
   - name: dim_person
     description: >
-      One row per real person across Survivor, Big Brother and The Challenge,
+      One row per real person across Survivor, Big Brother, The Challenge and The Traitors,
       built from connected components of identity, cross-show and manual edges.
     columns:
       - name: person_id
@@ -78,4 +78,4 @@ models:
         data_tests:
           - accepted_values:
               arguments:
-                values: ['jury_vote', 'final_challenge', 'vote_out', 'eviction', 'banished', 'elimination_round', 'quit', 'removed', 'medical']
+                values: ['jury_vote', 'final_challenge', 'final_vote', 'vote_out', 'eviction', 'banished', 'murdered', 'elimination_round', 'quit', 'removed', 'medical']
