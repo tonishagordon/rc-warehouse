@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+  - name: bigbrother
+    description: >
+      Big Brother (US) season pages from Wikipedia (CC BY-SA 4.0), saved as
+      snapshots by ingest/scrape_bigbrother.py and flattened to one row per
+      table cell by ingest/load_bigbrother.py.
+    schema: raw_bigbrother
+    tables:
+      - name: wiki_tables
+        description: One row per wikitable per season (section heading, caption, headers).
+      - name: wiki_cells
+        description: One row per table cell (season, table, row, column, header, value).

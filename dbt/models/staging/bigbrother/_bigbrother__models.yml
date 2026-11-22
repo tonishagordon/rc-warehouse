@@ -1,0 +1,60 @@
+version: 2
+
+models:
+  - name: stg_bigbrother__houseguests
+    description: >
+      One row per houseguest result row per US Big Brother season, pivoted
+      from the cell-level Wikipedia data. result_type is parsed from the
+      free-text Result column; exit_day from its "Day N" text. A houseguest
+      can have more than one row when their game had two outcomes (e.g. an
+      eviction that was nullified, then a win); intermediate picks the final one.
+    columns:
+      - name: houseguest_key
+        data_tests: [unique, not_null]
+      - name: houseguest_name
+        data_tests: [not_null]
+      - name: result_type
+        description: >
+          winner / runner_up / third_place / evicted / banished (BB1 audience
+          vote) / eliminated (twist battles) / exited (lost a return twist) /
+          eviction_nullified / expelled / walked. Null = unrecognized text.
+        data_tests:
+          - not_null:
+              config:
+                severity: warn
+          - accepted_values:
+              arguments:
+                values: ['winner', 'runner_up', 'third_place', 'evicted', 'banished', 'eliminated', 'exited', 'eviction_nullified', 'expelled', 'walked']
+
+  - name: stg_bigbrother__voting_grid
+    description: >
+      Voting history grid unpivoted to one row per (row label, column) cell.
+      is_event_row separates event rows (HOH, nominations, veto, evicted,
+      twists) from houseguest rows.
+    columns:
+      - name: row_label
+        data_tests: [not_null]
+
+  - name: stg_bigbrother__votes
+    description: >
+      One row per houseguest per voting column per target. cell_status = 'vote'
+      rows are actual votes (eviction votes weekly, jury votes in the finale
+      column). Two-target cells (couples votes, double-target twists) become
+      two rows, flagged is_multi_target.
+    columns:
+      - name: vote_key
+        data_tests: [unique, not_null]
+      - name: cell_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['vote', 'hoh', 'nominated', 'evicted', 'eliminated', 'expelled', 'walked', 'no_vote', 'winner', 'runner_up', 'other']
+
+  - name: stg_bigbrother__weekly_events
+    description: HOH, nominations, veto winners, evictions and twist winners per voting column.
+    columns:
+      - name: event_type
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['hoh', 'nominations_initial', 'nominations_final', 'veto_winner', 'evicted', 'twist']

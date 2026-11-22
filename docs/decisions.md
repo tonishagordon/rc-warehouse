@@ -26,3 +26,20 @@ A running record of modeling choices and why they were made.
 **Cause:** US51 is still airing. The source lists jurors as they're voted out, before the final Tribal Council, so their vote rows are placeholders.
 **Decision:** Staging drops jury vote rows with no finalist. `stg_survivor__seasons` gets an `is_season_complete` flag (true once a winner exists), so analyses can include or exclude the airing season on purpose.
 **Why not loosen the test:** the not-null check is right for completed votes. Filtering at the source of the problem keeps the test meaningful, and once the finale airs and the data refreshes, the real votes flow in with no code change.
+
+## D005 — Big Brother: extract → cell-level load → transform in dbt (ELT)
+**Date:** 2026-11-21
+**Decision:** Wikipedia pages are saved as dated snapshots (with revision IDs), then every table is flattened to one row per cell. dbt staging models rebuild the tables they need.
+**Why:** Table layouts change across 28 seasons (merged cells, split double-eviction weeks, one-off twist tables). A cell-level raw layer never breaks on a layout change, parsing logic can change without re-downloading, and the snapshots make every build reproducible.
+
+## D006 — Big Brother: classifying votes and results
+**Date:** 2026-11-21
+**Decisions:**
+- BB01 has no Voting history table (Season 1 used audience "banishments"), so BB voting data starts at BB02. BB01 houseguests are still loaded.
+- A voting cell counts as a **vote** only if its text exactly matches another houseguest's row label in the same season. Everything else is a status (HOH, nominated, evicted, no vote...) matched by pattern, or `other` (surfaced by a warn-level test).
+- Row labels are nicknames ("Boogie", "Swaggy C"), while the HouseGuests table has full names. Matching the two is deferred to intermediate (within-show entity resolution).
+- Result types were extended after the first build flagged 14 unrecognized values: banished (BB01), third place, exited (BB21 Camp Comeback), eliminated (BB27/BB28 battle-back twists), eviction nullified (BB25).
+- After the second build, a warn-level test surfaced 54 unclassified cells. They were resolved as: non-voting statuses (Non-HouseGuest twins in BB5/BB17, Coach in BB14, Camp Director in BB21, Backstage in BB24, Saved in BB28); **two-target votes** (BB9 couples phase "Alex & Amanda", BB28's double-target week "Drew Haley"), which now match pairs of labels and split into two rows flagged `is_multi_target`; and a BB18 team-phase result row ("Frank 9 of 9 votes to evict") that is now recognized as an event row.
+- BB04's last column is headed "Week 11", not "Finale", so its jury votes were counted as eviction votes. A column is now treated as the finale if its header says Finale **or** its result row says "votes to win".
+- Houseguests with two result rows are mostly in-season returns (e.g. Amy BB3, Kaysar BB6, BB21's Camp Comeback). Staging keeps every row; intermediate picks the final outcome.
+- Returning players' prior seasons are split out of the Name cell into `prior_shows_note`, a free signal for cross-show matching later.
