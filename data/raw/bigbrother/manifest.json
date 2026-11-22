@@ -1,0 +1,198 @@
+{
+  "BB01": {
+    "season": 1,
+    "title": "Big Brother 1 (American season)",
+    "revid": 1386527288,
+    "fetched_at": "2026-11-22T02:29:05.239403+00:00",
+    "file": "BB01.html.gz"
+  },
+  "BB02": {
+    "season": 2,
+    "title": "Big Brother 2 (American season)",
+    "revid": 1385395827,
+    "fetched_at": "2026-11-22T02:29:07.156721+00:00",
+    "file": "BB02.html.gz"
+  },
+  "BB03": {
+    "season": 3,
+    "title": "Big Brother 3 (American season)",
+    "revid": 1370489566,
+    "fetched_at": "2026-11-22T02:29:09.047150+00:00",
+    "file": "BB03.html.gz"
+  },
+  "BB04": {
+    "season": 4,
+    "title": "Big Brother 4 (American season)",
+    "revid": 1369905067,
+    "fetched_at": "2026-11-22T02:29:10.760892+00:00",
+    "file": "BB04.html.gz"
+  },
+  "BB05": {
+    "season": 5,
+    "title": "Big Brother 5 (American season)",
+    "revid": 1369421352,
+    "fetched_at": "2026-11-22T02:29:12.633084+00:00",
+    "file": "BB05.html.gz"
+  },
+  "BB06": {
+    "season": 6,
+    "title": "Big Brother 6 (American season)",
+    "revid": 1377339552,
+    "fetched_at": "2026-11-22T02:29:14.705787+00:00",
+    "file": "BB06.html.gz"
+  },
+  "BB07": {
+    "season": 7,
+    "title": "Big Brother 7 (American season)",
+    "revid": 1386545301,
+    "fetched_at": "2026-11-22T02:29:16.520936+00:00",
+    "file": "BB07.html.gz"
+  },
+  "BB08": {
+    "season": 8,
+    "title": "Big Brother 8 (American season)",
+    "revid": 1378446586,
+    "fetched_at": "2026-11-22T02:29:18.485259+00:00",
+    "file": "BB08.html.gz"
+  },
+  "BB09": {
+    "season": 9,
+    "title": "Big Brother 9 (American season)",
+    "revid": 1386795845,
+    "fetched_at": "2026-11-22T02:29:20.455416+00:00",
+    "file": "BB09.html.gz"
+  },
+  "BB10": {
+    "season": 10,
+    "title": "Big Brother 10 (American season)",
+    "revid": 1376528198,
+    "fetched_at": "2026-11-22T02:29:22.276266+00:00",
+    "file": "BB10.html.gz"
+  },
+  "BB11": {
+    "season": 11,
+    "title": "Big Brother 11 (American season)",
+    "revid": 1383952893,
+    "fetched_at": "2026-11-22T02:29:24.261203+00:00",
+    "file": "BB11.html.gz"
+  },
+  "BB12": {
+    "season": 12,
+    "title": "Big Brother 12 (American season)",
+    "revid": 1386893256,
+    "fetched_at": "2026-11-22T02:29:26.131091+00:00",
+    "file": "BB12.html.gz"
+  },
+  "BB13": {
+    "season": 13,
+    "title": "Big Brother 13 (American season)",
+    "revid": 1386548338,
+    "fetched_at": "2026-11-22T02:29:28.111258+00:00",
+    "file": "BB13.html.gz"
+  },
+  "BB14": {
+    "season": 14,
+    "title": "Big Brother 14 (American season)",
+    "revid": 1386720209,
+    "fetched_at": "2026-11-22T02:29:29.926197+00:00",
+    "file": "BB14.html.gz"
+  },
+  "BB15": {
+    "season": 15,
+    "title": "Big Brother 15 (American season)",
+    "revid": 1386313999,
+    "fetched_at": "2026-11-22T02:29:31.913258+00:00",
+    "file": "BB15.html.gz"
+  },
+  "BB16": {
+    "season": 16,
+    "title": "Big Brother 16 (American season)",
+    "revid": 1386307295,
+    "fetched_at": "2026-11-22T02:29:33.758598+00:00",
+    "file": "BB16.html.gz"
+  },
+  "BB17": {
+    "season": 17,
+    "title": "Big Brother 17 (American season)",
+    "revid": 1386314161,
+    "fetched_at": "2026-11-22T02:29:35.638651+00:00",
+    "file": "BB17.html.gz"
+  },
+  "BB18": {
+    "season": 18,
+    "title": "Big Brother 18 (American season)",
+    "revid": 1386549064,
+    "fetched_at": "2026-11-22T02:29:37.427290+00:00",
+    "file": "BB18.html.gz"
+  },
+  "BB19": {
+    "season": 19,
+    "title": "Big Brother 19 (American season)",
+    "revid": 1386893261,
+    "fetched_at": "2026-11-22T02:29:39.457354+00:00",
+    "file": "BB19.html.gz"
+  },
+  "BB20": {
+    "season": 20,
+    "title": "Big Brother 20 (American season)",
+    "revid": 1386734340,
+    "fetched_at": "2026-11-22T02:29:41.499818+00:00",
+    "file": "BB20.html.gz"
+  },
+  "BB21": {
+    "season": 21,
+    "title": "Big Brother 21 (American season)",
+    "revid": 1369903816,
+    "fetched_at": "2026-11-22T02:29:43.634123+00:00",
+    "file": "BB21.html.gz"
+  },
+  "BB22": {
+    "season": 22,
+    "title": "Big Brother 22 (American season)",
+    "revid": 1386549344,
+    "fetched_at": "2026-11-22T02:29:45.639917+00:00",
+    "file": "BB22.html.gz"
+  },
+  "BB23": {
+    "season": 23,
+    "title": "Big Brother 23 (American season)",
+    "revid": 1386525977,
+    "fetched_at": "2026-11-22T02:29:47.546773+00:00",
+    "file": "BB23.html.gz"
+  },
+  "BB24": {
+    "season": 24,
+    "title": "Big Brother 24 (American season)",
+    "revid": 1386549520,
+    "fetched_at": "2026-11-22T02:29:49.453608+00:00",
+    "file": "BB24.html.gz"
+  },
+  "BB25": {
+    "season": 25,
+    "title": "Big Brother 25 (American season)",
+    "revid": 1386549630,
+    "fetched_at": "2026-11-22T02:29:51.418686+00:00",
+    "file": "BB25.html.gz"
+  },
+  "BB26": {
+    "season": 26,
+    "title": "Big Brother 26 (American season)",
+    "revid": 1386549728,
+    "fetched_at": "2026-11-22T02:29:53.244989+00:00",
+    "file": "BB26.html.gz"
+  },
+  "BB27": {
+    "season": 27,
+    "title": "Big Brother 27 (American season)",
+    "revid": 1386550979,
+    "fetched_at": "2026-11-22T02:29:55.130635+00:00",
+    "file": "BB27.html.gz"
+  },
+  "BB28": {
+    "season": 28,
+    "title": "Big Brother 28 (American season)",
+    "revid": 1386878006,
+    "fetched_at": "2026-11-22T02:29:57.093400+00:00",
+    "file": "BB28.html.gz"
+  }
+}
