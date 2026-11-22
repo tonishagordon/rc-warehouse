@@ -1,0 +1,8 @@
+duckdb
+dbt-duckdb
+pandas
+openpyxl
+requests
+beautifulsoup4
+rapidfuzz
+streamlit
