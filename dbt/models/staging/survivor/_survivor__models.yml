@@ -1,0 +1,100 @@
+version: 2
+
+models:
+  - name: stg_survivor__seasons
+    description: One row per US Survivor season.
+    columns:
+      - name: season_key
+        description: Season identifier from survivoR (e.g. US01).
+        data_tests: [unique, not_null]
+      - name: season_number
+        data_tests: [unique, not_null]
+
+  - name: stg_survivor__castaways
+    description: One row per castaway per US season (an appearance).
+    columns:
+      - name: appearance_key
+        description: season_key + castaway_id. Set to warn, since a player can re-enter a season.
+        data_tests:
+          - unique:
+              config:
+                severity: warn
+      - name: season_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_survivor__seasons')
+                field: season_key
+      - name: castaway_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_survivor__castaway_details')
+                field: castaway_id
+
+  - name: stg_survivor__castaway_details
+    description: >
+      One row per person across all survivoR versions. Demographic columns
+      are intentionally excluded (see docs/decisions.md).
+    columns:
+      - name: castaway_id
+        data_tests: [unique, not_null]
+
+  - name: stg_survivor__episodes
+    description: One row per US Survivor episode.
+    columns:
+      - name: episode_key
+        data_tests: [unique, not_null]
+      - name: season_key
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('stg_survivor__seasons')
+                field: season_key
+
+  - name: stg_survivor__boot_order
+    description: One row per castaway exit in US seasons.
+    columns:
+      - name: castaway_id
+        data_tests: [not_null]
+
+  - name: stg_survivor__vote_history
+    description: One row per Tribal Council vote cast (voter -> target) in US seasons.
+    columns:
+      - name: voter_castaway_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_survivor__castaway_details')
+                field: castaway_id
+
+  - name: stg_survivor__jury_votes
+    description: One row per juror x finalist in US seasons.
+    columns:
+      - name: juror_castaway_id
+        data_tests: [not_null]
+      - name: finalist_castaway_id
+        data_tests: [not_null]
+
+  - name: stg_survivor__challenge_results
+    description: One row per castaway per challenge in US seasons.
+    columns:
+      - name: castaway_id
+        data_tests: [not_null]
+      - name: challenge_id
+        data_tests: [not_null]
+
+  - name: stg_survivor__tribe_mapping
+    description: Tribe membership by castaway and episode in US seasons.
+    columns:
+      - name: castaway_id
+        data_tests: [not_null]
+
+  - name: stg_survivor__advantage_movement
+    description: Every event in each advantage's life (found, passed, played) in US seasons.
+    columns:
+      - name: advantage_id
+        data_tests: [not_null]

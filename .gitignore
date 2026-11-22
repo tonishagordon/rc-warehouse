@@ -18,3 +18,4 @@ Thumbs.db
 .vscode/
 .idea/
 *:Zone.Identifier
+dbt/.user.yml
