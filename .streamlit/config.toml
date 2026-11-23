@@ -1,0 +1,11 @@
+# Dark editorial theme for the Streamlit app (app/streamlit_app.py).
+# Surface and text values come from the validated dark chart palette.
+[theme]
+base = "dark"
+backgroundColor = "#1a1a19"
+secondaryBackgroundColor = "#242422"
+textColor = "#f0efec"
+primaryColor = "#d95926"
+
+[client]
+toolbarMode = "viewer"

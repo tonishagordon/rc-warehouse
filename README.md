@@ -162,11 +162,15 @@ Alums are far more likely to be made Traitors and to be banished, and they're mu
 
 ## Explore it: the app
 
-**Live: [rc-warehouse.streamlit.app](https://rc-warehouse.streamlit.app/)**. A Streamlit app built on the marts (Parquet exports in `data/marts/`, D015):
+**Live: [rc-warehouse.streamlit.app](https://rc-warehouse.streamlit.app/)**. *One Cast, Four Shows* is a dark, editorial data story built on the marts (Parquet exports in `data/marts/`, D015). Five chapters, each with one number, one chart and the caveat that goes with it:
 
-- **Career Explorer:** pick anyone and see every season they played, in order, across all four shows
-- **Feeder Show Report:** first-Challenge performance by where players first became known (Survivor, Big Brother, The Real World, Are You the One?…)
-- **The Strategist Penalty:** Traitors outcomes for Survivor/Big Brother alums vs. everyone else
+1. **MTV stopped casting only its own:** where Challenge casts come from, by era
+2. **The return ticket:** who gets invited back after their first Challenge, by first-season result and by background
+3. **One show rewards experience, the other punishes it:** the same players' results season after season, Challenge vs. Survivor
+4. **There's no place like home:** crossover players on their original show vs. elsewhere
+5. **The strategist penalty:** how The Traitors treats Survivor and Big Brother alums
+
+It ends with a **look-anyone-up** explorer showing any player's full career across all four shows.
 
 Run it locally:
 
