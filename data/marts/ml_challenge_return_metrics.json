@@ -6,5 +6,5 @@
   "auc_baseline": 0.528,
   "brier_model": 0.235,
   "brier_baseline": 0.251,
-  "trained_date": "2026-11-22"
+  "trained_date": "2026-11-23"
 }

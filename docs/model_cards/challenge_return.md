@@ -26,4 +26,4 @@ Strongest pushes against: Made the final in their first season, Background: othe
 - Small groups (e.g. Survivor/Big Brother rookies) make those weights uncertain.
 - "Returned" means appeared again on The Challenge in this warehouse's scope (main series + US spin-offs).
 
-*Last trained 2026-11-22 by `ml/train_challenge_return.py`.*
+*Last trained 2026-11-23 by `ml/train_challenge_return.py`.*

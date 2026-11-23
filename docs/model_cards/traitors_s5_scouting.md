@@ -23,4 +23,4 @@ The US show has 4 seasons and 8 winners. A classifier trained on 8 positive exam
 - "Everyone else" mixes very different people (actors, athletes, Housewives); this warehouse has no record for them.
 - Groups are small, so ranges are wide. That's the honest answer, not a flaw to hide.
 
-*Built 2026-11-22 by `ml/traitors_s5_scouting.py`.*
+*Built 2026-11-23 by `ml/traitors_s5_scouting.py`.*

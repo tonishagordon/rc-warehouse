@@ -12,5 +12,5 @@
     "mean_winner_rank": 4.76
   },
   "baseline_random_expected_top1": 0.09,
-  "trained_date": "2026-11-22"
+  "trained_date": "2026-11-23"
 }

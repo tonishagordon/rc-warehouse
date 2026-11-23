@@ -33,4 +33,4 @@ Each season is predicted by a model that never saw it.
 - Twists (Edge of Extinction, Redemption Island, returnee formats) change the game in ways this model can't see.
 - The live prediction uses only pre-merge information, even though the season has moved on since.
 
-*Last trained 2026-11-22 by `ml/train_survivor_winner.py`.*
+*Last trained 2026-11-23 by `ml/train_survivor_winner.py`.*
