@@ -1,6 +1,7 @@
 # Reality Competition Data Warehouse
 
 [![dbt build](https://github.com/tonishagordon/rc-warehouse/actions/workflows/dbt.yml/badge.svg)](https://github.com/tonishagordon/rc-warehouse/actions/workflows/dbt.yml)
+· **[Open the live app →](https://rc-warehouse.streamlit.app/)**
 · **[Browse the dbt docs and lineage →](https://tonishagordon.github.io/rc-warehouse/)**
 
 One warehouse for **Survivor, Big Brother, The Challenge and The Traitors**, built from four sources that disagree with each other on almost everything. At its center is an **entity-resolution pipeline** that works out which records across the shows are the same person, so every contestant's full career can be followed from one show to the next.
@@ -161,16 +162,20 @@ Alums are far more likely to be made Traitors and to be banished, and they're mu
 
 ## Explore it: the app
 
-A Streamlit app sits on the marts (Parquet exports in `data/marts/`, D015):
+**Live: [rc-warehouse.streamlit.app](https://rc-warehouse.streamlit.app/)**. A Streamlit app built on the marts (Parquet exports in `data/marts/`, D015):
 
 - **Career Explorer:** pick anyone and see every season they played, in order, across all four shows
 - **Feeder Show Report:** first-Challenge performance by where players first became known (Survivor, Big Brother, The Real World, Are You the One?…)
 - **The Strategist Penalty:** Traitors outcomes for Survivor/Big Brother alums vs. everyone else
 
+Run it locally:
+
 ```bash
 pip install -r app/requirements.txt
 streamlit run app/streamlit_app.py
 ```
+
+It redeploys automatically on every push to `main`.
 
 ---
 
