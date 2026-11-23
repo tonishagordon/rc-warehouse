@@ -78,4 +78,4 @@ models:
         data_tests:
           - accepted_values:
               arguments:
-                values: ['jury_vote', 'final_challenge', 'final_vote', 'vote_out', 'eviction', 'banished', 'murdered', 'elimination_round', 'quit', 'removed', 'medical']
+                values: ['jury_vote', 'final_challenge', 'final_vote', 'vote_out', 'eviction', 'banished', 'murdered', 'elimination_round', 'quit', 'removed', 'medical', 'idoled_out', 'fire_making']

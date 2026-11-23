@@ -17,6 +17,6 @@ dbt/logs/
 Thumbs.db
 .vscode/
 .idea/
-*:Zone.Identifier
-dbt/.user.yml
-site/
+
+# Excel lock files while a tracker is open
+~$*.xlsx

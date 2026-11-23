@@ -1,0 +1,18 @@
+version: 2
+
+models:
+  - name: mart_survivor_moves
+    description: One row per castaway per US Survivor season with idol/advantage activity, voting behavior and outcome.
+    columns:
+      - name: survivor_move_key
+        data_tests: [unique, not_null]
+      - name: person_id
+        data_tests: [not_null]
+
+  - name: mart_bigbrother_moves
+    description: One row per houseguest per US Big Brother season with HOH wins, Veto wins, weeks nominated and outcome.
+    columns:
+      - name: bigbrother_move_key
+        data_tests: [unique, not_null]
+      - name: person_id
+        data_tests: [not_null]

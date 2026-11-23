@@ -59,22 +59,24 @@ tab_s, tab_c, tab_t = st.tabs(["Survivor 51", "The Challenge", "The Traitors S5"
 
 with tab_c:
     # ---- The Challenge: who gets the call back?
-    pull(f"{c_m['auc_model']:.2f}",
-         f"is how well the model separates rookies who return from those who don't (0.5 is a coin "
-         f"flip, 1.0 is perfect). Judging on first-season results alone scores {c_m['auc_baseline']:.2f}.")
+    pull(pct(c_m["auc_model"]),
+         f"Take one rookie who was invited back and one who wasn't: the model ranks the right one higher "
+         f"{pct(c_m['auc_model'])} of the time. Going by first-season results alone gets it right "
+         f"{pct(c_m['auc_baseline'])} of the time, and a coin flip 50%.")
     st.markdown(
-        f"Trained on {c_m['trained_on']:,} rookies from {c_m['seasons']} seasons, holding out whole "
-        "seasons at a time. Where a rookie came from moves the needle more than how they played.")
+        f"The model learned from {c_m['trained_on']:,} rookies across {c_m['seasons']} seasons and was graded on "
+        "seasons it hadn't seen. Longer bars matter more. Where a rookie came from matters more than how they played.")
     c_w = c_w.assign(direction=c_w["weight"].gt(0).map({True: "Raises the chance", False: "Lowers the chance"}))
     weights_chart = (
         alt.Chart(c_w).mark_bar(cornerRadiusEnd=4, height={"band": 0.62})
         .encode(
             y=alt.Y("label:N", title=None, sort="-x", axis=alt.Axis(domain=False, ticks=False, labelLimit=0)),
-            x=alt.X("weight:Q", title="Effect on the odds of a call back (standardized weight)"),
+            x=alt.X("weight:Q", title="← Less likely to be invited back · More likely →",
+                    axis=alt.Axis(labels=False, ticks=False)),
             color=alt.Color("direction:N", title=None,
                             scale=alt.Scale(domain=["Raises the chance", "Lowers the chance"],
                                             range=[BLUE, ORANGE])),
-            tooltip=[alt.Tooltip("label:N", title="Factor"), alt.Tooltip("weight:Q", title="Weight", format="+.2f")],
+            tooltip=[alt.Tooltip("label:N", title="Factor"), alt.Tooltip("direction:N", title="Effect")],
         ).properties(height=34 * len(c_w) + 40)
     )
     st.altair_chart(themed(weights_chart), width="stretch")
@@ -199,14 +201,15 @@ with tab_t:
                  alt.Tooltip("k:Q", title="Times it happened"), alt.Tooltip("n:Q", title="Past players")],
     )
     ranges = alt.Chart(tr_plot).mark_rule(strokeWidth=3, opacity=0.55, strokeCap="round").encode(
-        x=alt.X("low_80:Q", title="Estimated share, with 80% range", axis=alt.Axis(format="%"),
+        x=alt.X("low_80:Q", title="Estimated share of players", axis=alt.Axis(format="%"),
                 scale=alt.Scale(domain=[0, 1])), x2="high_80:Q", **enc)
     points = alt.Chart(tr_plot).mark_circle(size=110, opacity=1, stroke=SURFACE, strokeWidth=2).encode(
         x="estimate:Q", **enc)
     board = alt.layer(ranges, points).properties(height=alt.Step(20))
     st.altair_chart(themed(board), width="stretch")
     note(f"{t_meta['past_players']} past US Traitors appearances, each grouped by the player's record "
-         "before that season. Dots are estimates; lines are 80% ranges.")
+         "before that season. The dot is the best estimate; the line is the range the true rate most likely "
+         "falls in (80% confidence). Short lines mean more history to go on.")
 
     known = t_scout[t_scout["has_track_record"]]
     cards = "".join(

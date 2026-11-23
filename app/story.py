@@ -175,16 +175,16 @@ st.markdown(
     "Follow the same players season after season and the two biggest shows split. Challenge "
     "veterans slowly get better. Survivor's returnees get worse, because everyone arrives "
     "knowing exactly who they are.")
-pull(f"{sv_first:.2f} → {sv_third:.2f}",
-     f"Survivor three-timers averaged a {sv_first:.2f} finish in their first season and {sv_third:.2f} "
-     f"by their third. Challenge veterans climbed from {ch_first:.2f} to {ch_last:.2f}.")
+pull(f"{pct(sv_first)} → {pct(sv_third)}",
+     f"In their first season, Survivor three-timers outlasted {pct(sv_first)} of their cast on average. "
+     f"By their third, just {pct(sv_third)}. Challenge veterans went the other way, from {pct(ch_first)} to {pct(ch_last)}.")
 line = alt.Chart(cv).encode(
     x=alt.X("season_n:N", title="Season on that show", sort=buckets, axis=alt.Axis(labelAngle=0)),
-    y=alt.Y("pctl:Q", title="Average finish (1 = won, 0 = first out)", scale=alt.Scale(domain=[0.3, 0.8])),
+    y=alt.Y("pctl:Q", title="Share of the cast they outlasted", axis=alt.Axis(format="%"), scale=alt.Scale(domain=[0.3, 0.8])),
     color=alt.Color("show_title:N", title=None, scale=alt.Scale(domain=["The Challenge", "Survivor"],
                                                                 range=[BLUE, ORANGE])),
     tooltip=[alt.Tooltip("show_title:N", title="Show"), alt.Tooltip("season_n:N", title="Season"),
-             alt.Tooltip("pctl:Q", title="Avg finish", format=".2f"), alt.Tooltip("n:Q", title="Players")],
+             alt.Tooltip("pctl:Q", title="Outlasted", format=".0%"), alt.Tooltip("n:Q", title="Players")],
 )
 labels = (alt.Chart(cv).transform_window(rank="rank()", sort=[alt.SortField("season_n", order="descending")],
                                          groupby=["show_title"])
@@ -223,7 +223,7 @@ pull(f"{better_home} of {hf_people}",
      f"crossover players finished better, on average, on the show where they started.")
 dumbbell_base = alt.Chart(db).encode(
     y=alt.Y("debut:N", title=None, axis=alt.Axis(domain=False, ticks=False)),
-    x=alt.X("pctl:Q", title="Average finish (1 = won, 0 = first out)", scale=alt.Scale(domain=[0.3, 0.8])))
+    x=alt.X("pctl:Q", title="Share of the cast they outlasted", axis=alt.Axis(format="%"), scale=alt.Scale(domain=[0.3, 0.8])))
 dumbbell = (
     dumbbell_base.mark_line(color=INK_3, strokeWidth=2).encode(detail="debut:N")
     + dumbbell_base.mark_point(size=180, filled=True, opacity=1, stroke=SURFACE, strokeWidth=2).encode(
@@ -231,7 +231,7 @@ dumbbell = (
                         scale=alt.Scale(domain=["On their original show", "On other shows"],
                                         range=[ORANGE, BLUE])),
         tooltip=[alt.Tooltip("debut:N", title="Group"), alt.Tooltip("where:N", title="Where"),
-                 alt.Tooltip("pctl:Q", title="Avg finish", format=".2f")])
+                 alt.Tooltip("pctl:Q", title="Outlasted", format=".0%")])
 ).properties(height=170)
 st.altair_chart(themed(dumbbell), width="stretch")
 note("Some of the drop is luck evening out: people get recruited after an unusually good run, "
@@ -313,63 +313,11 @@ html(f"""
 """)
 
 
-html('''<div class="next-page">Next: <b>the crystal ball.</b> Three models that use this same data to
-predict who gets invited back to The Challenge, who wins Survivor 51, and who gets the cloak on
-The Traitors season 5.</div>''')
-st.page_link("predictions.py", label="See the predictions →")
-
-# ------------------------------------------------------------------ explorer
-chapter("Look anyone up", "Every season, every show")
-st.markdown("Pick a player to see their whole career in order, across all four shows.")
-choices = person.sort_values(["n_appearances", "person_name"], ascending=[False, True]).copy()
-crossover_only = st.toggle("Only players who crossed between shows", value=True)
-if crossover_only:
-    choices = choices[choices["is_crossover"]]
-choices["label"] = choices["person_name"] + "  ·  " + choices["n_appearances"].astype(str) + " seasons"
-labels_list = choices["label"].tolist()
-default = next((i for i, n in enumerate(choices["person_name"]) if n == "Cirie Fields"), 0)
-picked = st.selectbox("Player", labels_list, index=default, label_visibility="collapsed")
-pid = choices.loc[choices["label"] == picked, "person_id"].iloc[0]
-p = person.loc[person["person_id"] == pid].iloc[0]
-career = app[app["person_id"] == pid].sort_values("premiered_date")
-
-html(f"""
-<div class="stats" style="margin:1.2rem 0 1rem">
-  <div><div class="stat-num">{len(career)}</div><div class="stat-label">seasons</div></div>
-  <div><div class="stat-num">{int(p['n_shows'])}</div><div class="stat-label">shows</div></div>
-  <div><div class="stat-num">{int(career['is_winner'].sum())}</div><div class="stat-label">wins</div></div>
-  <div><div class="stat-num">{int(career['made_final'].sum())}</div><div class="stat-label">finals</div></div>
-</div>
-""")
-shows_present = [s for s in SHOW_ORDER if s in set(career["show_title"])]
-timeline = (
-    alt.Chart(career)
-    .mark_circle(size=230, opacity=1, stroke=SURFACE, strokeWidth=2)
-    .encode(
-        x=alt.X("premiered_date:T", title=None, axis=alt.Axis(format="%Y", tickCount="year", grid=False)),
-        y=alt.Y("show_title:N", title=None, scale=alt.Scale(domain=shows_present),
-                axis=alt.Axis(labelLimit=0, domain=False, ticks=False)),
-        color=alt.Color("outcome:N", title=None,
-                        scale=alt.Scale(domain=["Won", "Made the final", "Out before the final"],
-                                        range=[ORANGE, BLUE, INK_3])),
-        tooltip=[alt.Tooltip("season_name:N", title="Season"),
-                 alt.Tooltip("premiered_year:Q", title="Year", format="d"),
-                 alt.Tooltip("outcome:N", title="Result"), alt.Tooltip("how_it_ended:N", title="How it ended"),
-                 alt.Tooltip("finish_place:Q", title="Place"), alt.Tooltip("cast_size:Q", title="Cast size"),
-                 alt.Tooltip("name_as_billed:N", title="Billed as")],
-    )
-    .properties(height=alt.Step(56))
-)
-st.altair_chart(themed(timeline), width="stretch")
-st.dataframe(
-    career[["premiered_year", "show_title", "season_name", "outcome", "how_it_ended", "finish_place",
-            "cast_size", "game_role"]]
-    .rename(columns={"premiered_year": "Year", "show_title": "Show", "season_name": "Season",
-                     "outcome": "Result", "how_it_ended": "How it ended", "finish_place": "Place",
-                     "cast_size": "Cast", "game_role": "Traitors role"}),
-    hide_index=True, width="stretch")
-if p["name_variants"] and " | " in p["name_variants"]:
-    note(f"Billed under different names over the years: {p['name_variants']}.")
-
+html('''<div class="next-page"><b>Keep exploring.</b> See the moves behind the results, what the
+models predict next, or any player's whole career.</div>''')
+col1, col2, col3 = st.columns(3)
+col1.page_link("moves.py", label="Game moves →")
+col2.page_link("predictions.py", label="The crystal ball →")
+col3.page_link("explorer.py", label="Look anyone up →")
 
 footer()

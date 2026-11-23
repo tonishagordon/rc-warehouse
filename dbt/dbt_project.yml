@@ -40,3 +40,10 @@ seeds:
         name: varchar
         known_for: varchar
         warehouse_show: varchar
+    outcome_overrides:
+      +column_types:
+        show_name: varchar
+        season_key: varchar
+        name_as_billed: varchar
+        exit_method: varchar
+        note: varchar

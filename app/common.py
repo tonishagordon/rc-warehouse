@@ -29,7 +29,7 @@ EXIT_LABELS = {
     "jury_vote": "Jury vote", "final_challenge": "Final challenge", "final_vote": "End game",
     "vote_out": "Voted out", "eviction": "Evicted", "banished": "Banished", "murdered": "Murdered",
     "elimination_round": "Elimination", "quit": "Quit / walked", "removed": "Removed",
-    "medical": "Medical",
+    "medical": "Medical", "idoled_out": "Idoled out", "fire_making": "Lost fire-making",
 }
 
 
@@ -40,7 +40,7 @@ def inject_css() -> None:
 
     html, body, [data-testid="stAppViewContainer"] {{ background: {SURFACE}; }}
     [data-testid="stMainBlockContainer"] {{ max-width: 820px; padding-top: 3rem; }}
-    [data-testid="stHeader"] {{ background: transparent; }}
+    [data-testid="stHeader"] {{ background: {SURFACE}; border-bottom: 1px solid {GRID}; }}
     html, body, p, li, label, [data-testid="stMarkdownContainer"] {{ font-family: {SANS}; }}
     [data-testid="stMarkdownContainer"] p {{ color: {INK_2}; font-size: 1.05rem; line-height: 1.7; }}
 
@@ -88,6 +88,9 @@ def inject_css() -> None:
     [data-testid="stPageLink"] p {{ color: {ORANGE} !important; font-weight: 600; font-family: {SANS}; }}
     [data-baseweb="tab"] p {{ font: 600 .95rem/1 {SANS}; }}
     [data-baseweb="tab-list"] {{ margin: 1rem 0 .5rem; }}
+    [data-testid="stHeader"] a, [data-testid="stHeader"] a p, [data-testid="stHeader"] a span {{
+        font-size: .8rem !important; font-family: {SANS} !important; letter-spacing: .03em; }}
+    [data-testid="stHeader"] a {{ padding: .2rem .55rem !important; min-height: 0 !important; }}
     </style>
     """), unsafe_allow_html=True)
 
@@ -150,8 +153,8 @@ def footer(extra: str = "") -> None:
 <b>Methods.</b> Survivor data from the <a href="https://github.com/doehm/survivoR">survivoR</a> dataset (MIT);
 Big Brother, The Challenge and The Traitors from Wikipedia season pages (CC BY-SA 4.0). US seasons only.
 Each appearance was matched to one person with name normalization, blocking on the season a player
-came from, similarity scoring, graph clustering and a hand-checked crosswalk. "Finish" is a size-adjusted
-percentile: 1 = won, 0 = first out. The warehouse is rebuilt and tested on every change.{extra}
+came from, similarity scoring, graph clustering and a hand-checked crosswalk. "Finish" is the share of
+the cast a player outlasted, so seasons of different sizes compare fairly. The warehouse is rebuilt and tested on every change.{extra}
 <br><br><a href="{REPO_URL}">Code, README and design decisions</a> &nbsp;·&nbsp;
 <a href="{DOCS_URL}">dbt docs and lineage</a>
 </div>

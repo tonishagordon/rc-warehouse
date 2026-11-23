@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+  - name: manual
+    description: >
+      Data Toni records while watching, from the watch-along trackers in
+      data/manual/*_tracker.xlsx (made by ingest/make_tracker.py, loaded by
+      ingest/load_manual.py). Covers what no public source records:
+      alliances, the plan at each vote, blindsides, showmances.
+    schema: raw_manual
+    tables:
+      - name: alliances
+      - name: votes
+      - name: showmances

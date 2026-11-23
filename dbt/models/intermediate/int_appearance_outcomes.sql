@@ -4,7 +4,7 @@
 --                    removed / medical / in_progress / unknown
 --   exit_method:     jury_vote / final_challenge / final_vote / vote_out /
 --                    eviction / banished / murdered / elimination_round /
---                    quit / removed / medical
+--                    fire_making / idoled_out / quit / removed / medical
 -- plus a finish_place (1 = won) computed the same way for every show.
 -- Grain: one row per mention (person x season x show).
 
@@ -29,6 +29,14 @@ with survivor as (
         end                                         as result_category,
         case
             when c.is_finalist                                      then 'jury_vote'
+            -- since season 35, 4th place is decided by fire-making whenever
+            -- that player wasn't voted out, quit or evacuated (D019)
+            when c.season_number >= 35 and c.finish_place = 4
+             and c.result not ilike '%voted out%'
+             and c.result not ilike '%quit%'
+             and c.result not ilike '%medic%'
+             and c.result not ilike '%evacuat%'                     then 'fire_making'
+            when c.result ilike '%fire%'                            then 'fire_making'
             when c.result ilike '%voted out%'                       then 'vote_out'
             when c.result ilike '%quit%'                            then 'quit'
             when c.result ilike '%medic%' or c.result ilike '%evacuat%' then 'medical'

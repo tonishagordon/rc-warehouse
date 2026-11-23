@@ -10,6 +10,7 @@ python ingest/load_survivor.py
 python ingest/load_bigbrother.py
 python ingest/load_challenge.py
 python ingest/load_traitors.py
+python ingest/load_manual.py
 
 echo "== Transform + test (dbt) =="
 cd dbt

@@ -12,7 +12,7 @@ with base as (
         -- "Original season", Traitors "Notability"); null for Survivor/BB
         case when b.show_name in ('challenge', 'traitors') then b.prior_shows_note end as origin_listed,
         o.result_category,
-        o.exit_method,
+        coalesce(ov.exit_method, o.exit_method) as exit_method,
         o.game_role,
         o.result_raw,
         o.finish_place_final                 as finish_place,
@@ -27,6 +27,12 @@ with base as (
         on o.mention_key = b.mention_key
     inner join {{ ref('dim_season') }} as s
         on s.show_name = b.show_name and s.season_key = b.season_key
+    -- hand-checked corrections for exits the sources describe too generically
+    -- (e.g. Cirie "idoled out" on Game Changers); see seeds/outcome_overrides.csv
+    left join {{ ref('outcome_overrides') }} as ov
+        on ov.show_name = b.show_name
+       and ov.season_key = b.season_key
+       and lower(ov.name_as_billed) = lower(b.display_name)
 ),
 
 careers as (

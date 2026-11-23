@@ -139,3 +139,39 @@ A running record of modeling choices and why they were made.
 - *Display fix:* Challenge spin-off seasons titled only by number on Wikipedia ("5") now read "The Challenge: All Stars 5", and USA seasons read "The Challenge: USA season N".
 - *Model 2 results (Survivor winner, leave-one-season-out over 49 seasons, 554 players at the merge):* the pre-merge favorite won **26.5%** of the time vs. **18.4%** for "most confessionals" and **9%** for a random pick; the winner was in the model's top 3 **45%** of the time (39% for the edit baseline). Strongest signals: the standardized confessional index (up) and votes received before the merge (down).
 - *Model 3 (Traitors S5 scouting):* the 23-player cast is a dbt seed (`traitors_s5_cast.csv`) linked to `dim_person` by `ml_traitors_s5_cast`. A test fails if any player whose note names a warehouse show isn't matched to exactly one person. Group rates use a Beta(1,1) prior with 80% intervals.
+
+## D017 — Game moves: idols, votes and competition wins
+
+**Context:** fans judge players by their moves (idol plays, competition streaks, being on the right side of the vote). Survivor records these in detail (survivoR advantage and vote tables); Big Brother's Wikipedia voting tables record the weekly Head of Household, nominees, Veto winner and eviction.
+
+**Decision:**
+- `mart_survivor_moves` (one row per castaway-season): idols and advantages held, found and played, plays that cancelled votes, plays for someone else, voted out holding an idol, and the share of votes cast for the person who went home. Idols are identified from `advantage_details.advantage_type` (contains "idol", excluding idol nullifiers).
+- Big Brother tables label houseguests by on-air names ("Boogie"), so `int_bigbrother_label_map` maps each label to one houseguest with four rules from strictest to loosest, keeping a match only when it is unique. `mart_bigbrother_moves` counts HOH wins, Veto wins and weeks nominated with a whole-word match (`word_pad()` macro) against each week's event cells.
+- Guard tests: `assert_game_moves_detected` fails the build if idols, idol plays, HOH or Veto wins total zero (a renamed source value would otherwise produce silent zeroes); `assert_bb_labels_matched` warns with any label that didn't map.
+
+**Trade-off:** neither source records alliances. Voting with the person who went home is used as a rough stand-in and labeled that way in the app.
+
+**Player stats:** `mart_survivor_moves` also carries days lasted, individual immunity and reward wins, tribe immunity wins and votes against, so the player lookup can show season-by-season stats and career records.
+
+**App:** split into four pages (the story, game moves, the crystal ball, look anyone up) so no single page is overwhelming. Every number is written for a fan, not a statistician: finish is "share of the cast they outlasted", model accuracy is "ranks the right player higher X% of the time".
+
+## D018 — Data collected while watching (watch-along trackers) and hand-checked outcome fixes
+
+**Context:** no public source records alliances, what the majority planned at each vote, blindsides or showmances, yet those explain most of what happens on Survivor and Big Brother. Separately, some exits are described too generically by the sources: survivoR lists Cirie's Game Changers exit as an elimination, but she was "idoled out" (the only time a player went home with zero votes cast against her because everyone else was immune or protected).
+
+**Decision:**
+- `ingest/make_tracker.py <show> <season>` creates an Excel workbook per season (`data/manual/<season>_tracker.xlsx`) with tabs for Alliances, Votes (plan vs. what happened, blindside, who ran the vote) and Showmances (Big Brother). Name cells are dropdowns fed by a Cast tab pulled from the warehouse, so entries use the exact names the pipeline knows.
+- `ingest/load_manual.py` loads every tracker into `raw_manual` (creating empty tables when there are none, so the build never breaks), keeping the Excel row number of each entry.
+- dbt staging → `int_tracker_cast` → `fct_alliance_membership` and `fct_vote_plan`, linked to `dim_person`.
+- Tests point to the exact file, sheet and Excel row to fix: `assert_tracker_names_in_cast` (unknown name) and `assert_tracker_rows_valid` (left before joining, non-numeric episode, blindside not Yes/No, etc.).
+- `seeds/outcome_overrides.csv` holds hand-checked exit corrections, applied in `fct_appearance`; `assert_outcome_overrides_resolve` fails if a row doesn't match exactly one appearance. New exit labels: `idoled_out`, `fire_making`.
+
+**Why it matters:** this is first-party data collection with validation at the point of entry (dropdowns) and at load (tests), the same pattern as a client's manually maintained spreadsheet feeding a warehouse.
+
+## D019 — Fire-making losses get their own exit
+
+**Context:** survivoR records fire-making losers (e.g. Rick Devens in season 38, Jonathan Young in 42, Rizo Velovic in 49 and 50) as generic eliminations, which the app showed as "Elimination".
+
+**Decision:** a rule rather than one-off fixes: from season 35 on, the 4th-place finisher who wasn't voted out, didn't quit and wasn't evacuated lost fire-making (`exit_method = 'fire_making'`, shown as "Lost fire-making"). Any result text mentioning fire also maps there. `assert_one_fire_making_per_season` warns if a completed season from 35 on doesn't end up with exactly one.
+
+**Why a rule:** it fixes every fire-making loss at once, including future seasons, instead of waiting for someone to notice each one. One-off cases that no rule can describe (Cirie idoled out, D018) stay in `seeds/outcome_overrides.csv`.
