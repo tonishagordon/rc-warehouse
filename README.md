@@ -176,16 +176,19 @@ Built on dedicated `marts/ml` models, so features come from the same tested tabl
 
 ## Explore it: the app
 
-**Live: [rc-warehouse.streamlit.app](https://rc-warehouse.streamlit.app/)**. *One Cast, Four Shows* is a dark, editorial data story built on the marts (Parquet exports in `data/marts/`, D015). Six chapters, each with one number, one chart and the caveat that goes with it:
+**Live: [rc-warehouse.streamlit.app](https://rc-warehouse.streamlit.app/)**. *One Cast, Four Shows* is a dark, editorial data story built on the marts (Parquet exports in `data/marts/`, D015), split into two pages.
+
+**The story:** five chapters, each with one number, one chart and the caveat that goes with it:
 
 1. **MTV stopped casting only its own:** where Challenge casts come from, by era
 2. **The return ticket:** who gets invited back after their first Challenge, by first-season result and by background
 3. **One show rewards experience, the other punishes it:** the same players' results season after season, Challenge vs. Survivor
 4. **There's no place like home:** crossover players on their original show vs. elsewhere
 5. **The strategist penalty:** how The Traitors treats Survivor and Big Brother alums
-6. **The crystal ball:** all three predictive models, including live Survivor 51 odds and a Traitors season 5 scouting board
 
 It ends with a **look-anyone-up** explorer showing any player's full career across all four shows.
+
+**The crystal ball:** the three predictive models, one tab each: live Survivor 51 odds, The Challenge return ticket, and the Traitors season 5 scouting board.
 
 Run it locally:
 
@@ -231,7 +234,7 @@ ml/               train_challenge_return.py · train_survivor_winner.py · trait
 docs/decisions.md  16 design decisions, including the bugs that tests and reviews caught
 docs/model_cards/  one card per model: data, evaluation, drivers, limitations
 scripts/           build_warehouse.sh · export_marts.py
-app/               streamlit_app.py (reads data/marts/*.parquet and the model outputs)
+app/               streamlit_app.py (navigation) · story.py · predictions.py · common.py (styles, helpers)
 ```
 
 ---
