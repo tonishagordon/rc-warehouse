@@ -228,7 +228,7 @@ Everything rebuilds from the snapshots in `data/raw/`, with no network access. T
 ## Repository layout
 
 ```
-ingest/            scrape_*.py (extract) · load_*.py (load) · check_*.py (review) · make_tracker.py
+ingest/            scrape_*.py (extract) · load_*.py (load) · check_*.py (review) · make_tracker.py · add_tracker_link.py
 data/manual/       watch-along trackers (alliances, vote plans, showmances), one .xlsx per season
 data/raw/          committed source snapshots (survivoR xlsx, gzipped Wikipedia pages + manifests)
 dbt/
