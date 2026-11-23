@@ -98,3 +98,9 @@ models:
     columns:
       - name: advantage_id
         data_tests: [not_null]
+
+  - name: stg_survivor__confessionals
+    description: Confessionals per castaway per episode (US). confessional_index is survivoR's standardized count.
+    columns:
+      - name: castaway_id
+        data_tests: [not_null]

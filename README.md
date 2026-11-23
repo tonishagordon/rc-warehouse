@@ -11,10 +11,11 @@ One warehouse for **Survivor, Big Brother, The Challenge and The Traitors**, bui
 | **Shows / seasons** | 4 shows · 136 seasons (1998–2026) |
 | **People / appearances** | 1,637 people resolved from 2,850 season appearances |
 | **Cross-show careers** | 77 people who competed on more than one show |
-| **Data quality** | 109 automated dbt tests, 0 failures, 0 warnings · rebuilt and tested on every push |
-| **Design decisions** | 15 documented in [`docs/decisions.md`](docs/decisions.md) |
+| **Predictive models** | 3, each tested on held-out seasons against a simple baseline ([model cards](docs/model_cards/)) |
+| **Data quality** | 122 automated dbt tests, 0 failures, 0 warnings · rebuilt and tested on every push |
+| **Design decisions** | 16 documented in [`docs/decisions.md`](docs/decisions.md) |
 
-**Stack:** Python (requests, BeautifulSoup, pandas) · DuckDB · dbt Core · GitHub Actions · GitHub Pages
+**Stack:** Python (requests, BeautifulSoup, pandas, scikit-learn) · DuckDB · dbt Core · Streamlit + Altair · GitHub Actions · GitHub Pages
 
 ---
 
@@ -27,6 +28,7 @@ One warehouse for **Survivor, Big Brother, The Challenge and The Traitors**, bui
 | Dimensional modeling | A conformed `fct_appearance` with one outcome vocabulary across four shows with completely different rules |
 | Data quality you can trust | Over-merge guards, typo-proof manual overrides, warn-level tests that surface new edge cases instead of hiding them |
 | Extensibility | The Traitors was added as a 4th source **without redesigning anything** (D013) |
+| Predictive modeling with honest evaluation | Three models built on the marts, each validated on seasons held out by group and compared with a baseline a fan would use (D016) |
 | Reproducibility | Raw snapshots are committed with revision IDs; CI rebuilds the whole warehouse from them on every push |
 
 ---
@@ -160,15 +162,28 @@ Alums are far more likely to be made Traitors and to be banished, and they're mu
 
 ---
 
+## Predictive models
+
+Built on dedicated `marts/ml` models, so features come from the same tested tables as everything else. Each is evaluated on **seasons it never saw** and reported next to a simple baseline. Full write-ups live in [`docs/model_cards/`](docs/model_cards/).
+
+| Model | Question | Method | Result |
+|---|---|---|---|
+| **Return ticket** | Will a Challenge rookie be invited back? | Logistic regression, 5-fold CV grouped by season | AUC **0.65** vs. 0.53 for first-season results alone; already-returned 2024–26 rookies used as an early check |
+| **Who wins Survivor** | Of the players at the merge, who wins? | Logistic regression on pre-merge features, leave-one-season-out | Favorite won **26.5%** of 49 seasons vs. 18.4% for "most confessionals" and 9% random; live odds for Survivor 51 |
+| **Traitors S5 scouting** | Who is likely to be cast as a Traitor? | Bayesian rates (Beta prior) by track-record group, 80% intervals | Deliberately *not* a winner model: 4 seasons and 8 winners can't support one, and the card explains why |
+
+---
+
 ## Explore it: the app
 
-**Live: [rc-warehouse.streamlit.app](https://rc-warehouse.streamlit.app/)**. *One Cast, Four Shows* is a dark, editorial data story built on the marts (Parquet exports in `data/marts/`, D015). Five chapters, each with one number, one chart and the caveat that goes with it:
+**Live: [rc-warehouse.streamlit.app](https://rc-warehouse.streamlit.app/)**. *One Cast, Four Shows* is a dark, editorial data story built on the marts (Parquet exports in `data/marts/`, D015). Six chapters, each with one number, one chart and the caveat that goes with it:
 
 1. **MTV stopped casting only its own:** where Challenge casts come from, by era
 2. **The return ticket:** who gets invited back after their first Challenge, by first-season result and by background
 3. **One show rewards experience, the other punishes it:** the same players' results season after season, Challenge vs. Survivor
 4. **There's no place like home:** crossover players on their original show vs. elsewhere
 5. **The strategist penalty:** how The Traitors treats Survivor and Big Brother alums
+6. **The crystal ball:** all three predictive models, including live Survivor 51 odds and a Traitors season 5 scouting board
 
 It ends with a **look-anyone-up** explorer showing any player's full career across all four shows.
 
@@ -191,7 +206,7 @@ cd rc-warehouse
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-bash scripts/build_warehouse.sh        # load raw snapshots + dbt build (models + tests) + export marts
+bash scripts/build_warehouse.sh        # load raw snapshots + dbt build (models + tests) + export marts + train models
 cd dbt && dbt docs generate && dbt docs serve   # optional: browse docs locally
 ```
 
@@ -208,12 +223,15 @@ dbt/
   models/staging/       one folder per show: rename, cast, filter to US
   models/intermediate/  entity resolution, outcomes, season dates
   models/marts/core/    dim_person, dim_show, dim_season, fct_appearance, bridge_person_mention
-  seeds/                crosswalk_manual.csv (hand-checked same/different links)
+  models/marts/ml/      model-ready feature tables (Challenge rookies, Survivor at the merge, Traitors S5 cast)
+  seeds/                crosswalk_manual.csv (hand-checked links) · traitors_s5_cast.csv
   tests/                custom data tests (over-merge guards, crosswalk validation, date order…)
   macros/               normalize_name, nickname, origin_show
-docs/decisions.md  15 design decisions, including the bugs that tests and reviews caught
+ml/               train_challenge_return.py · train_survivor_winner.py · traitors_s5_scouting.py
+docs/decisions.md  16 design decisions, including the bugs that tests and reviews caught
+docs/model_cards/  one card per model: data, evaluation, drivers, limitations
 scripts/           build_warehouse.sh · export_marts.py
-app/               streamlit_app.py (reads data/marts/*.parquet)
+app/               streamlit_app.py (reads data/marts/*.parquet and the model outputs)
 ```
 
 ---

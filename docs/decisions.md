@@ -126,3 +126,16 @@ A running record of modeling choices and why they were made.
 **Date:** 2026-11-22
 **Decision:** The Streamlit app reads Parquet exports of the four marts (`data/marts/`, written by `scripts/export_marts.py`) rather than the DuckDB file. The exports are small, committed, and let the app deploy without running the pipeline.
 **New fields:** `fct_appearance.origin_listed` / `origin_show_listed` (what the Challenge or Traitors cast table says the person is from) and `dim_person.debut_show` / `background`. Background is Survivor or Big Brother if the person debuted there, otherwise the origin show their first cast table lists (The Real World, Are You the One?, Love Island…). This splits the old catch-all "challenge" group in the Feeder Show Report.
+
+## D016 — Predictive models: honest evaluation over impressive numbers
+**Date:** 2026-11-22
+**Decision:** Three models, each built from a dbt feature table and a small Python training script, with results exported for the app and documented in a model card (`docs/model_cards/`):
+1. **The Challenge return ticket** (will a rookie be cast again?): logistic regression; grouped cross-validation by season; compared with a baseline of "return rate by first-season result".
+2. **Who wins Survivor?** (from what's known at the merge): next.
+3. **The Traitors season 5 scouting report:** next. With 4 seasons and 8 winners, a winner classifier would be guessing, so this uses transparent track-record rates with uncertainty instead.
+**Why:** every model is compared with a simple baseline and evaluated on data it never saw (whole seasons held out), so a reader can see whether it actually adds anything. Interpretable models are preferred, so each prediction can be explained.
+- *Model 1 results (return ticket):* leave-season-out AUC **0.65** vs. **0.53** for the first-season-result baseline; Brier 0.235 vs. 0.251. The biggest driver is **background** (MTV originals strongly up, "other" origins strongly down), then how long the rookie lasted. Winning or making the final adds nothing beyond lasting long. The casting story is "who you are" more than "how you did".
+- *Model 2 (Survivor winner):* features from before the merge only (`ml_survivor_merge_features`), leave-one-season-out over the completed seasons, compared with random and "most pre-merge confessionals" baselines; the season airing now is scored live among the players still in it.
+- *Display fix:* Challenge spin-off seasons titled only by number on Wikipedia ("5") now read "The Challenge: All Stars 5", and USA seasons read "The Challenge: USA season N".
+- *Model 2 results (Survivor winner, leave-one-season-out over 49 seasons, 554 players at the merge):* the pre-merge favorite won **26.5%** of the time vs. **18.4%** for "most confessionals" and **9%** for a random pick; the winner was in the model's top 3 **45%** of the time (39% for the edit baseline). Strongest signals: the standardized confessional index (up) and votes received before the merge (down).
+- *Model 3 (Traitors S5 scouting):* the 23-player cast is a dbt seed (`traitors_s5_cast.csv`) linked to `dim_person` by `ml_traitors_s5_cast`. A test fails if any player whose note names a warehouse show isn't matched to exactly one person. Group rates use a Beta(1,1) prior with 80% intervals.

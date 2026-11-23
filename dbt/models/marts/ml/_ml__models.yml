@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: ml_challenge_rookies
+    description: >
+      Feature table for the Challenge return-ticket model: one row per rookie
+      Challenge season with first-season result, background and the label
+      `returned` (cast again later). Label only for debuts through 2023.
+    columns:
+      - name: person_id
+        data_tests: [unique, not_null]
+      - name: returned
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+      - name: background_group
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['mtv_original', 'survivor_bb', 'dating_show', 'other']
+
+  - name: ml_survivor_merge_features
+    description: >
+      Feature table for the Survivor winner model: one row per castaway who
+      reached the merge, with pre-merge gameplay (votes against, tribals,
+      majority-vote rate, challenge win rate, advantages found), the pre-merge
+      edit (confessionals, survivoR confessional index), age and prior seasons.
+      Labels for completed seasons; still_in_game for the season airing now.
+    columns:
+      - name: merge_player_key
+        data_tests: [unique, not_null]
+
+  - name: ml_traitors_s5_cast
+    description: >
+      The Traitors season 5 cast linked to dim_person where the player has a
+      track record in this warehouse (Survivor, Big Brother, The Challenge).
+    columns:
+      - name: name
+        data_tests: [unique, not_null]

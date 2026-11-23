@@ -1,0 +1,10 @@
+{
+  "trained_on": 422,
+  "seasons": 44,
+  "base_rate": 0.474,
+  "auc_model": 0.65,
+  "auc_baseline": 0.528,
+  "brier_model": 0.235,
+  "brier_baseline": 0.251,
+  "trained_date": "2026-11-22"
+}

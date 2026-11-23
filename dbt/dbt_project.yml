@@ -35,3 +35,8 @@ seeds:
         name_b: varchar
         decision: varchar
         note: varchar
+    traitors_s5_cast:
+      +column_types:
+        name: varchar
+        known_for: varchar
+        warehouse_show: varchar

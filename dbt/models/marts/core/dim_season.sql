@@ -40,7 +40,12 @@ challenge as (
         'challenge'                     as show_name,
         s.series,
         s.season_number,
-        s.season_title                  as season_name,
+        -- spin-offs are titled by number on Wikipedia ("5"): prefix the series
+        case
+            when regexp_matches(s.season_title, '^\d+$') then s.series || ' ' || s.season_title
+            when s.season_key like 'CUSA%'                then 'The Challenge: USA season ' || cast(cast(substr(s.season_key, 5) as integer) as varchar)
+            else s.season_title
+        end                             as season_name,
         p.premiered_date,
         p.finale_date,
         coalesce(w.has_winner, false)   as is_season_complete

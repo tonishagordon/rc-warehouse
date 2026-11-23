@@ -18,3 +18,8 @@ dbt build
 echo "== Export marts for the app =="
 cd ..
 python scripts/export_marts.py
+
+echo "== Train predictive models =="
+python ml/train_challenge_return.py
+python ml/train_survivor_winner.py
+python ml/traitors_s5_scouting.py
