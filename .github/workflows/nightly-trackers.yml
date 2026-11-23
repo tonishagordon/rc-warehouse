@@ -1,0 +1,48 @@
+name: Nightly tracker refresh
+
+# Every night, pull the watch-along trackers from Google Sheets. If anything
+# changed, rebuild the warehouse (with all tests), retrain the models, and
+# commit the refreshed tracker copies + app data. The push redeploys the live
+# Streamlit app. If the tests fail (e.g. a misspelled name), nothing is
+# committed and the run shows which sheet and row to fix.
+
+on:
+  schedule:
+    - cron: "17 8 * * *"   # 08:17 UTC = 2:17 AM Central (3:17 AM during daylight time)
+  workflow_dispatch:        # "Run workflow" button for an on-demand refresh
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download trackers from Google Sheets
+        id: fetch
+        run: |
+          python ingest/fetch_trackers.py | tee fetch.log
+          echo "changed=$(grep -oP 'CHANGED=\K\d+' fetch.log)" >> "$GITHUB_OUTPUT"
+
+      - name: Rebuild warehouse, run tests, retrain models
+        if: steps.fetch.outputs.changed != '0'
+        run: bash scripts/build_warehouse.sh
+
+      - name: Commit refreshed data
+        if: steps.fetch.outputs.changed != '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/manual data/marts docs/model_cards
+          git commit -m "Nightly refresh: tracker notes from Google Sheets"
+          git push

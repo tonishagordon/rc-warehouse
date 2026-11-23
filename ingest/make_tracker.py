@@ -56,8 +56,9 @@ HOW_TO = [
     "   ran_the_vote = the player who drove the plan (optional).",
     "Showmances (Big Brother): one row per couple.",
     "",
-    "Save the file, then run: bash scripts/build_warehouse.sh",
-    "The build checks every row (unknown names, an alliance that ends before it starts, ...) and tells you what to fix.",
+    "In Google Sheets, changes are picked up overnight and the live app updates on its own.",
+    "The build checks every row (unknown names, an alliance that ends before it starts, ...).",
+    "If something is off, the nightly run on GitHub (Actions tab) names the sheet and row to fix.",
 ]
 
 

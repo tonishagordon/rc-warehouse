@@ -175,3 +175,14 @@ A running record of modeling choices and why they were made.
 **Decision:** a rule rather than one-off fixes: from season 35 on, the 4th-place finisher who wasn't voted out, didn't quit and wasn't evacuated lost fire-making (`exit_method = 'fire_making'`, shown as "Lost fire-making"). Any result text mentioning fire also maps there. `assert_one_fire_making_per_season` warns if a completed season from 35 on doesn't end up with exactly one.
 
 **Why a rule:** it fixes every fire-making loss at once, including future seasons, instead of waiting for someone to notice each one. One-off cases that no rule can describe (Cirie idoled out, D018) stay in `seeds/outcome_overrides.csv`.
+
+## D020 — Trackers live in Google Sheets; a nightly job refreshes the app
+
+**Context:** the trackers get filled in while watching, usually on an iPad or phone, not at the computer.
+
+**Decision:** each season's tracker is a Google Sheet (uploaded from the generated .xlsx, so tabs and dropdowns carry over) published to the web as .xlsx. `data/manual/tracker_links.csv` lists the links. `ingest/fetch_trackers.py` downloads each one into `data/manual/`, rewriting a file only when its *cell contents* changed (Google's exports differ byte-for-byte on every download). A scheduled GitHub Action (`nightly-trackers.yml`, 2:17 AM Central) runs the fetch; if anything changed it rebuilds the warehouse with every test, retrains the models and commits the refreshed copies and app data, which redeploys the live app.
+
+**Trade-offs:**
+- The push-triggered CI does *not* fetch, so a normal build is always reproducible from the committed copy; the nightly commit is the record of what changed in the sheet.
+- "Publish to web" makes each tracker readable by anyone with the link. Acceptable for TV notes; nothing else in the Google account is shared. A private alternative (a service account and a GitHub secret) is possible later.
+- If tests fail, nothing is committed: the live app keeps the last good data and the failed run names the sheet and row to fix.
